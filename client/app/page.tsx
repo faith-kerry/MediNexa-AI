@@ -1,23 +1,28 @@
 import Button from "@/components/ui/Button";
+import Card from "@/components/ui/Card";
 import Input from "@/components/ui/Input";
+
+import {
+  HeartPulse,
+  Brain,
+  Hospital,
+} from "lucide-react";
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-background flex flex-col items-center justify-center px-6 py-12">
-      {/* Heading */}
-      <section className="text-center mb-10">
-        <h1 className="text-5xl font-bold text-primary mb-3">
+    <main className="min-h-screen bg-background px-8 py-16">
+
+      <section className="text-center mb-16">
+        <h1 className="text-5xl font-bold text-primary mb-4">
           Welcome to MediNexa AI
         </h1>
 
-        <p className="text-muted text-lg max-w-2xl">
-          AI-Powered Healthcare for Everyone. Bridging communication,
-          improving access to care, and empowering healthier communities.
+        <p className="text-muted text-lg">
+          AI-Powered Healthcare for Everyone
         </p>
       </section>
 
-      {/* Buttons */}
-      <section className="flex flex-wrap justify-center gap-4 mb-12">
+      <section className="flex justify-center gap-4 mb-16 flex-wrap">
         <Button variant="primary">
           Get Started
         </Button>
@@ -35,8 +40,8 @@ export default function Home() {
         </Button>
       </section>
 
-      {/* Input Components */}
-      <section className="w-full max-w-md space-y-5">
+      <section className="max-w-md mx-auto space-y-5 mb-20">
+
         <Input
           label="Full Name"
           placeholder="Enter your full name"
@@ -53,7 +58,31 @@ export default function Home() {
           type="password"
           placeholder="Enter your password"
         />
+
       </section>
+
+      <section className="grid md:grid-cols-3 gap-8">
+
+        <Card
+          icon={<HeartPulse size={30} />}
+          title="Digital Health"
+          description="Access your health records, appointments, prescriptions, and AI assistance all in one secure place."
+        />
+
+        <Card
+          icon={<Brain size={30} />}
+          title="AI Health Assistant"
+          description="Receive intelligent health guidance, multilingual communication, and personalized support powered by AI."
+        />
+
+        <Card
+          icon={<Hospital size={30} />}
+          title="Connected Healthcare"
+          description="Connect patients, doctors, hospitals, pharmacies, and caregivers through one unified healthcare platform."
+        />
+
+      </section>
+
     </main>
   );
 }

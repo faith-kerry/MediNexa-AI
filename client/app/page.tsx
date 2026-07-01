@@ -1,21 +1,17 @@
-import Navbar from "@/components/layout/Navbar";
-import Hero from "@/components/home/Hero";
-import Stats from "@/components/home/Stats";
-import Features from "@/components/home/Features";
-import HowItWorks from "@/components/home/HowItWorks";
-import CTA from "@/components/home/CTA";
-import Footer from "@/components/home/Footer";
+import DashboardLayout from "@/components/layout/DashboardLayout";
 
-export default function Home() {
+export default function DashboardPage() {
   return (
-    <>
-      <Navbar />
-      <Hero />
-      <Stats />
-      <Features />
-      <HowItWorks />
-      <CTA />
-      <Footer />
-    </>
+    <DashboardLayout>
+
+      <h1 className="text-4xl font-bold">
+        Dashboard
+      </h1>
+
+      <p className="text-gray-500 mt-2">
+        Welcome to MediNexa AI.
+      </p>
+
+    </DashboardLayout>
   );
 }

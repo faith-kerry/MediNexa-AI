@@ -11,17 +11,26 @@ import {
   Loader2,
 } from "lucide-react";
 import { sendMessage } from "@/services/aiService";
+import useSpeechRecognition from "@/hooks/useSpeechRecognition";
+
+interface ChatMessage {
+  sender: "user" | "ai";
+  text: string;
+  time: string;
+}
 
 export default function AIChatPage() {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const { listening, startListening } = useSpeechRecognition();
+
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  const [messages, setMessages] = useState([
+  const [messages, setMessages] = useState<ChatMessage[]>([
     {
       sender: "ai",
-      text: "Hello! I'm MediNexa AI. I can help explain symptoms, medications, lab results and doctor's instructions.",
+      text: "Hello! I'm MediNexa AI. I can help explain symptoms, medications, lab results and doctor's instructions. How can I help you today?",
       time: new Date().toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit",
@@ -35,12 +44,14 @@ export default function AIChatPage() {
     });
   }, [messages]);
 
-  const handleSend = async () => {
-    if (!message.trim()) return;
+  const handleSend = async (customMessage?: string) => {
+    const currentMessage = customMessage || message;
 
-    const userMessage = {
+    if (!currentMessage.trim()) return;
+
+    const userMessage: ChatMessage = {
       sender: "user",
-      text: message,
+      text: currentMessage,
       time: new Date().toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit",
@@ -52,25 +63,24 @@ export default function AIChatPage() {
     setLoading(true);
 
     try {
-      const response = await sendMessage(message);
+      const response = await sendMessage(currentMessage);
 
-      setMessages((prev) => [
-        ...prev,
-        {
-          sender: "ai",
-          text: response.reply,
-          time: new Date().toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
-        },
-      ]);
+      const aiMessage: ChatMessage = {
+        sender: "ai",
+        text: response.reply,
+        time: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      };
+
+      setMessages((prev) => [...prev, aiMessage]);
     } catch {
       setMessages((prev) => [
         ...prev,
         {
           sender: "ai",
-          text: "Sorry, I couldn't process your request.",
+          text: "Sorry, something went wrong. Please try again.",
           time: new Date().toLocaleTimeString([], {
             hour: "2-digit",
             minute: "2-digit",
@@ -81,6 +91,12 @@ export default function AIChatPage() {
 
     setLoading(false);
     setMessage("");
+  };
+
+  const handleVoiceInput = () => {
+    startListening(async (text) => {
+      await handleSend(text);
+    });
   };
 
   return (
@@ -117,9 +133,7 @@ export default function AIChatPage() {
 
           </div>
 
-          <div className="flex-1 overflow-y-auto p-6 space-y-5">
-
-            {messages.map((msg, index) => (
+          <div className="flex-1 overflow-y-auto p-6 space-y-5">            {messages.map((msg, index) => (
               <div
                 key={index}
                 className={`flex ${
@@ -129,10 +143,10 @@ export default function AIChatPage() {
                 }`}
               >
                 <div
-                  className={`max-w-xl rounded-2xl px-5 py-4 ${
+                  className={`max-w-xl rounded-2xl px-5 py-4 shadow ${
                     msg.sender === "user"
                       ? "bg-blue-600 text-white"
-                      : "bg-slate-100"
+                      : "bg-slate-100 text-slate-800"
                   }`}
                 >
                   <div className="flex items-center gap-2 mb-2">
@@ -149,7 +163,10 @@ export default function AIChatPage() {
 
                   </div>
 
-                  {msg.text}
+                  <p className="leading-7 whitespace-pre-wrap">
+                    {msg.text}
+                  </p>
+
                 </div>
               </div>
             ))}
@@ -162,12 +179,14 @@ export default function AIChatPage() {
                   size={20}
                 />
 
-                <p>MediNexa AI is typing...</p>
+                <span className="text-slate-500">
+                  MediNexa AI is typing...
+                </span>
 
               </div>
             )}
 
-            <div ref={bottomRef}></div>
+            <div ref={bottomRef} />
 
           </div>
 
@@ -183,34 +202,34 @@ export default function AIChatPage() {
                 onClick={() =>
                   setMessage("I have had a headache for three days.")
                 }
-                className="bg-slate-100 rounded-full px-4 py-2 hover:bg-slate-200"
+                className="rounded-full bg-slate-100 hover:bg-slate-200 px-4 py-2 transition"
               >
                 Headache
               </button>
 
               <button
                 onClick={() =>
-                  setMessage("Explain my lab results.")
+                  setMessage("Explain my lab results in simple language.")
                 }
-                className="bg-slate-100 rounded-full px-4 py-2 hover:bg-slate-200"
+                className="rounded-full bg-slate-100 hover:bg-slate-200 px-4 py-2 transition"
               >
                 Lab Results
               </button>
 
               <button
                 onClick={() =>
-                  setMessage("Translate doctor's instructions.")
+                  setMessage("Translate my doctor's instructions into Swahili.")
                 }
-                className="bg-slate-100 rounded-full px-4 py-2 hover:bg-slate-200"
+                className="rounded-full bg-slate-100 hover:bg-slate-200 px-4 py-2 transition"
               >
                 Translate
               </button>
 
               <button
                 onClick={() =>
-                  setMessage("How should I take my medication?")
+                  setMessage("Remind me how to take my medication.")
                 }
-                className="bg-slate-100 rounded-full px-4 py-2 hover:bg-slate-200"
+                className="rounded-full bg-slate-100 hover:bg-slate-200 px-4 py-2 transition"
               >
                 Medication
               </button>
@@ -221,35 +240,39 @@ export default function AIChatPage() {
 
           <div className="border-t p-5">
 
-            <div className="flex gap-3">
-
-              <button className="bg-slate-100 p-3 rounded-xl">
-                <Languages />
+            <div className="flex gap-3">              <button className="bg-slate-100 hover:bg-slate-200 p-3 rounded-xl transition">
+                <Languages size={20} />
               </button>
 
-              <button className="bg-slate-100 p-3 rounded-xl">
-                <Mic />
+              <button
+                onClick={handleVoiceInput}
+                className={`p-3 rounded-xl transition ${
+                  listening
+                    ? "bg-red-600 text-white animate-pulse"
+                    : "bg-slate-100 hover:bg-slate-200"
+                }`}
+              >
+                <Mic size={20} />
               </button>
 
               <input
                 value={message}
-                onChange={(e) =>
-                  setMessage(e.target.value)
-                }
+                onChange={(e) => setMessage(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     handleSend();
                   }
                 }}
-                placeholder="Type your message..."
-                className="flex-1 border rounded-xl px-5"
+                placeholder="Describe your symptoms or ask a health question..."
+                className="flex-1 border border-slate-300 rounded-xl px-5 outline-none focus:ring-2 focus:ring-blue-600"
               />
 
               <button
-                onClick={handleSend}
-                className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-6"
+                onClick={() => handleSend()}
+                disabled={loading}
+                className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-xl px-6 flex items-center justify-center transition"
               >
-                <Send />
+                <Send size={20} />
               </button>
 
             </div>

@@ -1,85 +1,115 @@
 "use client";
 
+import { useState } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Bot, Send, Mic, Languages } from "lucide-react";
+import { sendMessage } from "@/services/aiService";
 
 export default function AIChatPage() {
+  const [message, setMessage] = useState("");
+  const [messages, setMessages] = useState([
+    {
+      sender: "ai",
+      text: "Hello! I'm MediNexa AI. How can I help you today?",
+    },
+  ]);
+
+  const handleSend = async () => {
+    if (!message.trim()) return;
+
+    const userMessage = {
+      sender: "user",
+      text: message,
+    };
+
+    setMessages((prev) => [...prev, userMessage]);
+
+    try {
+      const response = await sendMessage(message);
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          sender: "ai",
+          text: response.reply,
+        },
+      ]);
+    } catch {
+      setMessages((prev) => [
+        ...prev,
+        {
+          sender: "ai",
+          text: "Sorry, something went wrong.",
+        },
+      ]);
+    }
+
+    setMessage("");
+  };
+
   return (
     <DashboardLayout>
-      <div className="space-y-8">
+      <div className="space-y-6">
 
         <div>
-          <h1 className="text-4xl font-bold text-slate-800">
+          <h1 className="text-4xl font-bold">
             AI Health Assistant
           </h1>
 
-          <p className="text-slate-500 mt-2">
-            Ask health questions, translate doctor's instructions and get AI guidance.
+          <p className="text-slate-500">
+            Chat with MediNexa AI
           </p>
         </div>
 
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm h-[550px] flex flex-col">
+        <div className="bg-white rounded-2xl shadow border flex flex-col h-[650px]">
 
-          <div className="border-b p-5 flex items-center gap-3">
+          <div className="p-5 border-b flex items-center gap-3">
+            <Bot className="text-blue-600" size={30} />
+            <h2 className="font-bold text-xl">
+              MediNexa AI
+            </h2>
+          </div>
 
-            <div className="bg-blue-600 w-12 h-12 rounded-xl flex items-center justify-center text-white">
-              <Bot size={26} />
-            </div>
+          <div className="flex-1 overflow-y-auto p-6 space-y-4">
 
-            <div>
-              <h2 className="font-bold text-lg">
-                MediNexa AI
-              </h2>
-
-              <p className="text-sm text-green-600">
-                Online
-              </p>
-            </div>
+            {messages.map((msg, index) => (
+              <div
+                key={index}
+                className={`max-w-xl p-4 rounded-xl ${
+                  msg.sender === "user"
+                    ? "bg-blue-600 text-white ml-auto"
+                    : "bg-slate-100"
+                }`}
+              >
+                {msg.text}
+              </div>
+            ))}
 
           </div>
 
-          <div className="flex-1 overflow-y-auto p-6 space-y-5">
+          <div className="border-t p-5 flex gap-3">
 
-            <div className="bg-slate-100 rounded-2xl p-4 max-w-xl">
-              Hello 👋 I'm your AI healthcare assistant.
-              <br /><br />
-              I can help you:
-              <br />
-              • Understand symptoms
-              <br />
-              • Explain lab results
-              <br />
-              • Translate doctor's instructions
-              <br />
-              • Medication guidance
-              <br />
-              • Mental wellness support
-            </div>
+            <button className="p-3 bg-slate-100 rounded-xl">
+              <Languages />
+            </button>
 
-          </div>
+            <button className="p-3 bg-slate-100 rounded-xl">
+              <Mic />
+            </button>
 
-          <div className="border-t p-5">
+            <input
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="Describe your symptoms..."
+              className="flex-1 border rounded-xl px-4"
+            />
 
-            <div className="flex gap-3">
-
-              <button className="p-3 rounded-xl bg-slate-100">
-                <Languages size={22}/>
-              </button>
-
-              <button className="p-3 rounded-xl bg-slate-100">
-                <Mic size={22}/>
-              </button>
-
-              <input
-                className="flex-1 border rounded-xl px-5 outline-none"
-                placeholder="Describe your symptoms..."
-              />
-
-              <button className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-6">
-                <Send size={22}/>
-              </button>
-
-            </div>
+            <button
+              onClick={handleSend}
+              className="bg-blue-600 text-white px-6 rounded-xl"
+            >
+              <Send />
+            </button>
 
           </div>
 

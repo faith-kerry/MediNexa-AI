@@ -119,14 +119,18 @@ export default function AppointmentPage() {
 
       <div className="space-y-8">
 
-        <div>
+        <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
 
-          <h1 className="text-4xl font-bold">
-            Book Appointment
+          <p className="mb-2 text-sm font-semibold uppercase tracking-widest text-blue-600">
+            Appointments
+          </p>
+
+          <h1 className="text-4xl font-bold tracking-tight text-slate-900">
+            Book an Appointment
           </h1>
 
-          <p className="text-slate-500 mt-2">
-            Choose a doctor and schedule your consultation.
+          <p className="mt-3 max-w-3xl leading-7 text-slate-600">
+            Search for a doctor, choose a convenient date and time, and schedule your consultation.
           </p>
 
         </div>
@@ -143,7 +147,7 @@ export default function AppointmentPage() {
             placeholder="Search doctor or specialty..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full border rounded-2xl pl-12 pr-5 py-4"
+            className="w-full rounded-2xl border border-slate-200 bg-white py-4 pl-12 pr-5 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
           />
 
         </div>
@@ -156,27 +160,39 @@ export default function AppointmentPage() {
                 setDoctor(doc.name);
                 setSpecialty(doc.specialty);
               }}
-              className={`cursor-pointer rounded-3xl border p-6 shadow-md transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${
+              className={`cursor-pointer rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${
                 doctor === doc.name
-                  ? "border-blue-600 ring-2 ring-blue-300"
-                  : "border-slate-200 dark:border-slate-700"
+                  ? "border-blue-500 ring-4 ring-blue-100"
+                  : ""
               } bg-white dark:bg-slate-900`}
             >
 
-              <div className="flex items-center justify-center w-20 h-20 rounded-full bg-blue-100 text-blue-700 text-3xl font-bold mx-auto">
+              <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl bg-blue-100 text-3xl font-bold text-blue-600">
                 {doc.name.split(" ")[1][0]}
               </div>
 
-              <h2 className="text-xl font-bold text-center mt-5">
+              <h2
+                className={`mt-5 text-center text-xl font-bold ${
+                  doctor === doc.name ? "text-blue-700" : "text-slate-900"
+                }`}
+              >
                 {doc.name}
               </h2>
 
-              <div className="flex items-center justify-center gap-2 mt-2 text-blue-600">
+              <div
+                className={`mt-2 flex items-center justify-center gap-2 ${
+                  doctor === doc.name ? "text-blue-600" : "text-slate-500"
+                }`}
+              >
                 <Stethoscope size={18} />
                 <span>{doc.specialty}</span>
               </div>
 
-              <p className="text-center text-slate-500 mt-3">
+              <p
+                className={`mt-3 text-center ${
+                  doctor === doc.name ? "text-slate-700" : "text-slate-500"
+                }`}
+              >
                 {doc.hospital}
               </p>
 
@@ -218,9 +234,9 @@ export default function AppointmentPage() {
 
         </div>
 
-        <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-lg p-8 mt-10">
+        <div className="mt-10 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
 
-          <h2 className="text-2xl font-bold mb-6">
+          <h2 className="mb-6 text-2xl font-bold text-slate-900">
             Appointment Details
           </h2>
 
@@ -228,7 +244,7 @@ export default function AppointmentPage() {
 
             <div>
 
-              <label className="font-semibold">
+              <label className="mb-2 block font-medium text-slate-700">
                 Patient Name
               </label>
 
@@ -244,7 +260,7 @@ export default function AppointmentPage() {
                   onChange={(e) =>
                     setPatientName(e.target.value)
                   }
-                  className="w-full border rounded-xl pl-12 pr-4 py-3"
+                  className="w-full rounded-2xl border border-slate-200 bg-white py-3 pl-12 pr-4 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
                   placeholder="Enter your full name"
                 />
 
@@ -254,19 +270,19 @@ export default function AppointmentPage() {
 
             <div>
 
-              <label className="font-semibold">
+              <label className="mb-2 block font-medium text-slate-700">
                 Selected Doctor
               </label>
 
               <input
                 value={doctor}
                 readOnly
-                className="w-full mt-2 border rounded-xl px-4 py-3 bg-slate-100"
+                className="w-full rounded-2xl border border-slate-200 bg-white py-3 pl-12 pr-4 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
               />
 
             </div>            <div>
 
-              <label className="font-semibold">
+              <label className="mb-2 block font-medium text-slate-700">
                 Appointment Date
               </label>
 
@@ -281,7 +297,7 @@ export default function AppointmentPage() {
                   type="date"
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
-                  className="w-full border rounded-xl pl-12 pr-4 py-3"
+                  className="w-full rounded-2xl border border-slate-200 bg-white py-3 pl-12 pr-4 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
                 />
 
               </div>
@@ -290,7 +306,7 @@ export default function AppointmentPage() {
 
             <div>
 
-              <label className="font-semibold">
+              <label className="mb-2 block font-medium text-slate-700">
                 Appointment Time
               </label>
 
@@ -305,7 +321,7 @@ export default function AppointmentPage() {
                   type="time"
                   value={time}
                   onChange={(e) => setTime(e.target.value)}
-                  className="w-full border rounded-xl pl-12 pr-4 py-3"
+                  className="w-full rounded-2xl border border-slate-200 bg-white py-3 pl-12 pr-4 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
                 />
 
               </div>
@@ -316,7 +332,7 @@ export default function AppointmentPage() {
 
           <div className="mt-6">
 
-            <label className="font-semibold">
+            <label className="mb-2 block font-medium text-slate-700">
               Reason for Visit
             </label>
 
@@ -325,21 +341,21 @@ export default function AppointmentPage() {
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               placeholder="Briefly describe your symptoms or reason for booking..."
-              className="w-full mt-2 border rounded-2xl p-4 resize-none"
+              className="mt-2 w-full resize-none rounded-2xl border border-slate-200 bg-white p-4 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
             />
 
           </div>
 
           <button
             onClick={handleBook}
-            className="mt-8 w-full bg-blue-600 hover:bg-blue-700 text-white rounded-2xl py-4 font-bold transition"
+            className="mt-8 w-full rounded-2xl bg-blue-600 py-4 font-semibold text-white transition-all duration-300 hover:scale-[1.01] hover:bg-blue-700"
           >
             Book Appointment
           </button>
 
           {success && (
 
-            <div className="mt-8 rounded-2xl border border-green-200 bg-green-50 dark:bg-green-900/20 dark:border-green-700 p-6 flex items-start gap-4">
+            <div className="mt-8 flex items-start gap-4 rounded-3xl border border-green-200 bg-green-50 p-6">
 
               <CheckCircle2
                 className="text-green-600 mt-1"
@@ -348,11 +364,11 @@ export default function AppointmentPage() {
 
               <div>
 
-                <h3 className="font-bold text-lg text-green-700 dark:text-green-400">
+                <h3 className="text-lg font-bold text-green-700">
                   Appointment Booked Successfully!
                 </h3>
 
-                <p className="mt-2 text-slate-700 dark:text-slate-300">
+                <p className="mt-2 leading-7 text-slate-600">
                   Your appointment request has been submitted.
                   You will receive confirmation and reminders
                   once your booking is approved.

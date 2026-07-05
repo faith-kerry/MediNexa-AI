@@ -21,13 +21,17 @@ export default function Dashboard() {
       <div className="space-y-10">
         {/* Welcome Section */}
 
-        <div>
-          <h1 className="text-4xl font-bold text-slate-800">
-            Welcome to MediNexa AI
+        <div className="rounded-3xl border border-slate-200 bg-gradient-to-r from-white to-slate-50 p-8 shadow-sm">
+          <p className="mb-2 text-sm font-semibold uppercase tracking-widest text-blue-600">
+            Dashboard
+          </p>
+
+          <h1 className="text-4xl font-bold tracking-tight text-slate-900">
+            Welcome to <span className="text-blue-600">MediNexa AI</span>
           </h1>
 
-          <p className="text-slate-500 mt-2">
-            Your AI-powered healthcare companion.
+          <p className="mt-3 max-w-2xl text-slate-600 leading-7">
+            Monitor patients, manage appointments, review reports, and access intelligent healthcare tools—all from one place.
           </p>
         </div>
 

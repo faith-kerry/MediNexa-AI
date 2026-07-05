@@ -9,9 +9,18 @@ import {
   UserCircle,
   CalendarDays,
   MessageCircle,
+  Menu,
 } from "lucide-react";
 
-export default function Topbar() {
+interface TopbarProps {
+  sidebarOpen: boolean;
+  setSidebarOpen: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+export default function Topbar({
+  sidebarOpen,
+  setSidebarOpen,
+}: TopbarProps) {
   const [darkMode, setDarkMode] = useState(false);
   const [currentDate, setCurrentDate] = useState("");
 
@@ -34,77 +43,88 @@ export default function Topbar() {
   };
 
   return (
-    <header className="h-20 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-700 flex items-center justify-between px-8">
+    <header className="sticky top-0 z-30 flex h-20 items-center justify-between border-b border-slate-200 bg-white/95 px-8 backdrop-blur-md">
 
       {/* Left */}
+      <div className="flex items-center gap-5">
 
-      <div>
+        <button
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          className="rounded-xl p-2 transition hover:bg-slate-100"
+        >
+          <Menu size={24} className="text-slate-700" />
+        </button>
 
-        <h1 className="text-2xl font-bold text-slate-800 dark:text-white">
-          Good Morning, Faith 👋
-        </h1>
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">
+            Good Morning, Faith 👋
+          </h1>
 
-        <p className="text-gray-500 dark:text-gray-300 flex items-center gap-2 mt-1">
-          <CalendarDays size={16} />
-          {currentDate}
-        </p>
+          <p className="mt-1 flex items-center gap-2 text-sm text-slate-500">
+            <CalendarDays size={16} />
+            {currentDate}
+          </p>
+        </div>
 
       </div>
 
-      {/* Center */}
-
-      <div className="relative w-[400px]">
+      {/* Search */}
+      <div className="relative hidden w-[420px] lg:block">
 
         <Search
-          className="absolute left-4 top-3.5 text-gray-400"
-          size={20}
+          className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+          size={18}
         />
 
         <input
           placeholder="Search doctors, hospitals, prescriptions..."
-          className="w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-gray-50 dark:bg-slate-800 py-3 pl-12 pr-4 outline-none focus:ring-2 focus:ring-sky-500"
+          className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-4 text-slate-700 outline-none transition-all duration-200 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100"
         />
 
       </div>
 
       {/* Right */}
+      <div className="flex items-center gap-3">
 
-      <div className="flex items-center gap-6">
+        <button className="relative rounded-xl p-2 transition hover:bg-slate-100">
 
-        <button className="relative">
+          <Bell size={22} className="text-slate-700" />
 
-          <Bell size={24} />
-
-          <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+          <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white">
             3
           </span>
 
         </button>
 
-        <button>
-
-          <MessageCircle size={24} />
-
+        <button className="rounded-xl p-2 transition hover:bg-slate-100">
+          <MessageCircle size={22} className="text-slate-700" />
         </button>
 
         <button
           onClick={toggleTheme}
-          className="bg-slate-100 dark:bg-slate-700 rounded-full p-2 transition"
+          className="rounded-xl bg-slate-100 p-2 transition hover:bg-slate-200"
         >
-          {darkMode ? <Sun size={22} /> : <Moon size={22} />}
+          {darkMode ? (
+            <Sun size={20} className="text-yellow-500" />
+          ) : (
+            <Moon size={20} className="text-slate-700" />
+          )}
         </button>
 
-        <div className="flex items-center gap-3">
+        <div className="ml-2 flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-3 py-2 shadow-sm">
 
-          <UserCircle size={42} />
+          <UserCircle
+            size={40}
+            className="text-blue-600"
+          />
 
-          <div>
+          <div className="hidden md:block">
 
-            <h2 className="font-semibold text-slate-800 dark:text-white">
+            <h2 className="font-semibold text-slate-900">
               Faith Kerubo
             </h2>
 
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-slate-500">
               Patient
             </p>
 

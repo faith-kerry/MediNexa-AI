@@ -10,6 +10,7 @@ const aiRoutes = require("./routes/aiRoutes");
 const app = express();
 const appointmentRoutes = require("./routes/appointmentRoutes");
 const doctorRoutes = require("./routes/doctorRoutes");
+const labRoutes = require("./routes/labRoutes");
 // Middleware
 app.use(cors());
 
@@ -25,7 +26,7 @@ app.use(morgan("dev"));
 app.use("/api/auth", authRoutes);
 app.use("/api/translator", translatorRoutes);
 app.use("/api/appointments", appointmentRoutes);
-app.use("/api/doctor", doctorRoutes);
+app.use("/api/lab", labRoutes);
 // Home Route
 app.get("/", (req, res) => {
   res.json({

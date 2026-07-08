@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   Bot,
@@ -67,6 +67,20 @@ export default function Sidebar({
   open,
 }: SidebarProps) {
   const pathname = usePathname();
+  const router = useRouter();
+
+const handleLogout = () => {
+  const confirmLogout = window.confirm(
+    "Are you sure you want to log out?"
+  );
+
+  if (!confirmLogout) return;
+
+  localStorage.removeItem("token");
+  localStorage.removeItem("user");
+
+  router.push("/pages/login");
+};
 
   return (
     <aside
@@ -135,7 +149,10 @@ export default function Sidebar({
           {open && <span>Settings</span>}
         </Link>
 
-        <button className="flex w-full items-center gap-4 rounded-2xl px-4 py-3 text-red-500 transition hover:bg-red-50">
+        <button
+          onClick={handleLogout}
+          className="flex w-full items-center gap-4 rounded-2xl px-4 py-3 text-red-500 transition hover:bg-red-50"
+        >
           <LogOut size={22} />
 
           {open && <span>Logout</span>}

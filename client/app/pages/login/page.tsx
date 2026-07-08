@@ -2,9 +2,58 @@
 
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
+  const router = useRouter();
+
+const [email, setEmail] = useState("");
+const [password, setPassword] = useState("");
+
+const [loading, setLoading] = useState(false);
+const [error, setError] = useState("");
+
+const handleLogin = async (e: React.FormEvent) => {
+  e.preventDefault();
+
+  setLoading(true);
+  setError("");
+
+  try {
+    const response = await fetch(
+      "http://localhost:5000/api/auth/login",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          password,
+        }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      setError(data.message);
+      setLoading(false);
+      return;
+    }
+
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("user", JSON.stringify(data.user));
+
+    router.push("/pages/dashboard");
+
+  } catch (err) {
+    setError("Server unavailable.");
+  }
+
+  setLoading(false);
+};
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-slate-100 px-4">
@@ -18,7 +67,10 @@ export default function LoginPage() {
           Sign in to continue to your <span className="font-semibold text-blue-600">MediNexa AI</span> workspace.
         </p>
 
-        <form className="mt-8 space-y-6">
+        <form
+          onSubmit={handleLogin}
+          className="mt-8 space-y-6"
+        >
 
           <div>
             <label className="mb-2 block text-sm font-semibold text-slate-700">
@@ -33,9 +85,11 @@ export default function LoginPage() {
 
               <input
                 type="email"
-                placeholder="johndoe@gmail.com"
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-12 pr-4 text-slate-900 placeholder:text-slate-400 transition-all duration-200 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-100"
-              />
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="faith@example.com"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-12 pr-4 text-slate-900 placeholder:text-slate-400 transition-all duration-200 focus:border-green-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-green-100"
+             />
             </div>
           </div>
 
@@ -51,9 +105,11 @@ export default function LoginPage() {
               />
 
               <input
-                type={showPassword ? "text" : "password"}
-                placeholder="Enter Password"
-                className="w-full rounded-xl border pl-10 pr-12 py-3 outline-none focus:ring-2 focus:ring-blue-500"
+                 type={showPassword ? "text" : "password"}
+                 value={password}
+                 onChange={(e) => setPassword(e.target.value)}
+                 placeholder="Password123"
+                 className="w-full rounded-xl border pl-10 pr-12 py-3 outline-none focus:ring-2 focus:ring-green-500"
               />
 
               <button
@@ -83,9 +139,19 @@ export default function LoginPage() {
             </a>
           </div>
 
-          <button className="w-full rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 py-3.5 text-base font-semibold text-white shadow-lg shadow-blue-200 transition-all duration-300 hover:-translate-y-0.5 hover:from-blue-700 hover:to-blue-800 hover:shadow-xl hover:shadow-blue-300 active:translate-y-0">
-            Sign In
-          </button>
+          {error && (
+  <div className="rounded-xl bg-red-100 border border-red-300 p-3 text-sm text-red-700">
+    {error}
+  </div>
+)}
+
+<button
+  type="submit"
+  disabled={loading}
+  className="w-full rounded-xl bg-gradient-to-r from-green-600 to-green-700 py-3.5 text-base font-semibold text-white shadow-lg shadow-green-200 transition-all duration-300 hover:-translate-y-0.5 hover:from-green-700 hover:to-green-800 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-70"
+>
+  {loading ? "Signing In..." : "Sign In"}
+</button>
 
         </form>
 

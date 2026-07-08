@@ -1,6 +1,10 @@
-const { hashPassword } = require("../utils/hash");
+const prisma = require("../lib/prisma");
+const { hashPassword, comparePassword } = require("../utils/hash");
 const generateToken = require("../utils/jwt");
 
+// =========================
+// REGISTER
+// =========================
 exports.register = async (req, res) => {
   try {
     const { fullName, email, password, confirmPassword } = req.body;
@@ -19,25 +23,54 @@ exports.register = async (req, res) => {
       });
     }
 
+    const existingUser = await prisma.user.findUnique({
+      where: {
+        email,
+      },
+    });
+
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: "Email already exists",
+      });
+    }
+
     const hashedPassword = await hashPassword(password);
 
-    res.status(201).json({
-      success: true,
-      message: "Validation successful",
+    const user = await prisma.user.create({
       data: {
         fullName,
         email,
-        hashedPassword,
+        password: hashedPassword,
       },
     });
+
+    const token = generateToken(user);
+
+    return res.status(201).json({
+      success: true,
+      message: "Registration successful",
+      token,
+      user: {
+        id: user.id,
+        fullName: user.fullName,
+        email: user.email,
+        role: user.role,
+      },
+    });
+
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: error.message,
     });
   }
 };
 
+// =========================
+// LOGIN
+// =========================
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -49,21 +82,28 @@ exports.login = async (req, res) => {
       });
     }
 
-    // Temporary user until Prisma is connected
-    const user = {
-      id: "123456",
-      fullName: "Faith Kerubo",
-      email: "faith@example.com",
-      role: "PATIENT",
-    };
+    const user = await prisma.user.findUnique({
+      where: {
+        email,
+      },
+    });
 
-    if (
-      email !== "faith@example.com" ||
-      password !== "Password123"
-    ) {
+    if (!user) {
       return res.status(401).json({
         success: false,
-        message: "Invalid credentials",
+        message: "Invalid email or password",
+      });
+    }
+
+    const validPassword = await comparePassword(
+      password,
+      user.password
+    );
+
+    if (!validPassword) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid email or password",
       });
     }
 
@@ -73,8 +113,14 @@ exports.login = async (req, res) => {
       success: true,
       message: "Login successful",
       token,
-      user,
+      user: {
+        id: user.id,
+        fullName: user.fullName,
+        email: user.email,
+        role: user.role,
+      },
     });
+
   } catch (error) {
     return res.status(500).json({
       success: false,
@@ -83,15 +129,21 @@ exports.login = async (req, res) => {
   }
 };
 
+// =========================
+// FORGOT PASSWORD
+// =========================
 exports.forgotPassword = async (req, res) => {
-  res.json({
+  return res.json({
     success: true,
     message: "Forgot password endpoint working",
   });
 };
 
+// =========================
+// RESET PASSWORD
+// =========================
 exports.resetPassword = async (req, res) => {
-  res.json({
+  return res.json({
     success: true,
     message: "Reset password endpoint working",
   });

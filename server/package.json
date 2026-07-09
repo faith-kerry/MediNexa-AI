@@ -7,6 +7,9 @@
     "dev": "nodemon src/server.js",
     "start": "node src/server.js"
   },
+  "prisma": {
+  "seed": "node prisma/seed.js"
+},
   "keywords": [],
   "author": "Faith Kerubo",
   "license": "ISC",
@@ -29,3 +32,4 @@
     "nodemon": "^3.1.14"
   }
 }
+

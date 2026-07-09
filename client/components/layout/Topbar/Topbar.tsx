@@ -25,6 +25,13 @@ export default function Topbar({
   const [currentDate, setCurrentDate] = useState("");
 
   useEffect(() => {
+    const savedTheme = localStorage.getItem("theme");
+
+    if (savedTheme === "dark") {
+      document.documentElement.classList.add("dark");
+      setDarkMode(true);
+    }
+
     const today = new Date();
 
     setCurrentDate(
@@ -38,93 +45,131 @@ export default function Topbar({
   }, []);
 
   const toggleTheme = () => {
-    document.documentElement.classList.toggle("dark");
+    if (darkMode) {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("theme", "light");
+    } else {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+    }
+
     setDarkMode(!darkMode);
   };
 
   return (
-    <header className="sticky top-0 z-30 flex h-20 items-center justify-between border-b border-slate-200 bg-white/95 px-8 backdrop-blur-md">
+    <header className="sticky top-0 z-40 flex h-20 items-center justify-between border-b border-emerald-100 bg-white/95 px-8 backdrop-blur-lg shadow-sm">
 
-      {/* Left */}
+      {/* LEFT */}
+
       <div className="flex items-center gap-5">
 
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="rounded-xl p-2 transition hover:bg-slate-100"
+          className="rounded-xl p-2 hover:bg-emerald-50 transition"
         >
-          <Menu size={24} className="text-slate-700" />
+          <Menu
+            size={24}
+            className="text-emerald-700"
+          />
         </button>
 
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">
+
+          <h1 className="text-2xl font-bold text-slate-800">
             Good Morning, Faith 👋
           </h1>
 
           <p className="mt-1 flex items-center gap-2 text-sm text-slate-500">
-            <CalendarDays size={16} />
+
+            <CalendarDays
+              size={16}
+              className="text-emerald-600"
+            />
+
             {currentDate}
+
           </p>
+
         </div>
 
       </div>
 
-      {/* Search */}
-      <div className="relative hidden w-[420px] lg:block">
+      {/* SEARCH */}
+
+      <div className="relative hidden w-[430px] lg:block">
 
         <Search
-          className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
           size={18}
+          className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
         />
 
         <input
-          placeholder="Search doctors, hospitals, prescriptions..."
-          className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-4 text-slate-700 outline-none transition-all duration-200 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100"
+          type="text"
+          placeholder="Search appointments, doctors, prescriptions..."
+          className="w-full rounded-2xl border border-emerald-100 bg-emerald-50 py-3 pl-11 pr-4 text-slate-700 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-100"
         />
 
       </div>
 
-      {/* Right */}
+      {/* RIGHT */}
+
       <div className="flex items-center gap-3">
 
-        <button className="relative rounded-xl p-2 transition hover:bg-slate-100">
+        <button className="relative rounded-xl p-2 hover:bg-emerald-50 transition">
 
-          <Bell size={22} className="text-slate-700" />
+          <Bell
+            size={22}
+            className="text-slate-700"
+          />
 
-          <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white">
+          <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-600 text-xs text-white">
             3
           </span>
 
         </button>
 
-        <button className="rounded-xl p-2 transition hover:bg-slate-100">
-          <MessageCircle size={22} className="text-slate-700" />
+        <button className="rounded-xl p-2 hover:bg-emerald-50 transition">
+
+          <MessageCircle
+            size={22}
+            className="text-slate-700"
+          />
+
         </button>
 
         <button
           onClick={toggleTheme}
-          className="rounded-xl bg-slate-100 p-2 transition hover:bg-slate-200"
+          className="rounded-xl bg-emerald-50 p-2 hover:bg-emerald-100 transition"
         >
+
           {darkMode ? (
-            <Sun size={20} className="text-yellow-500" />
+            <Sun
+              size={20}
+              className="text-yellow-500"
+            />
           ) : (
-            <Moon size={20} className="text-slate-700" />
+            <Moon
+              size={20}
+              className="text-emerald-700"
+            />
           )}
+
         </button>
 
-        <div className="ml-2 flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-3 py-2 shadow-sm">
+        <div className="ml-2 flex items-center gap-3 rounded-2xl border border-emerald-100 bg-white px-4 py-2 shadow-sm">
 
           <UserCircle
-            size={40}
-            className="text-blue-600"
+            size={42}
+            className="text-emerald-600"
           />
 
           <div className="hidden md:block">
 
-            <h2 className="font-semibold text-slate-900">
+            <h2 className="font-semibold text-slate-800">
               Faith Kerubo
             </h2>
 
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-emerald-600">
               Patient
             </p>
 

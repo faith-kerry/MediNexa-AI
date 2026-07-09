@@ -1,7 +1,8 @@
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import StatCard from "@/components/cards/StatCard";
 import QuickActionCard from "@/components/cards/QuickActionCard";
-
+import Link from "next/link";
+import { UserRound, Stethoscope } from "lucide-react";
 import {
   HeartPulse,
   CalendarDays,
@@ -29,6 +30,56 @@ export default function Dashboard() {
           <h1 className="text-4xl font-bold tracking-tight text-slate-900">
             Welcome to <span className="text-blue-600">MediNexa AI</span>
           </h1>
+
+          {/* Continue As */}
+
+<div>
+  <h2 className="mb-5 text-2xl font-bold text-slate-800">
+    Continue As
+  </h2>
+
+  <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+
+    <Link href="/pages/patient">
+      <div className="cursor-pointer rounded-3xl border border-emerald-200 bg-emerald-50 p-8 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+
+        <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-600 text-white">
+          <UserRound size={30} />
+        </div>
+
+        <h3 className="text-2xl font-bold text-slate-800">
+          Continue as Patient
+        </h3>
+
+        <p className="mt-3 text-slate-600">
+          Access appointments, prescriptions, lab reports,
+          AI assistant and your personal medical records.
+        </p>
+
+      </div>
+    </Link>
+
+    <Link href="/pages/doctor">
+      <div className="cursor-pointer rounded-3xl border border-emerald-200 bg-emerald-50 p-8 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+
+        <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-600 text-white">
+          <Stethoscope size={30} />
+        </div>
+
+        <h3 className="text-2xl font-bold text-slate-800">
+          Continue as Doctor
+        </h3>
+
+        <p className="mt-3 text-slate-600">
+          Manage patients, appointments, prescriptions,
+          medical records and AI clinical tools.
+        </p>
+
+      </div>
+    </Link>
+
+  </div>
+</div>
 
           <p className="mt-3 max-w-2xl text-slate-600 leading-7">
             Monitor patients, manage appointments, review reports, and access intelligent healthcare tools—all from one place.

@@ -14,6 +14,67 @@ import {
   
 
 export default function DoctorDashboard() {
+  const [stats, setStats] = useState([
+  {
+    title: "Today's Appointments",
+    value: 0,
+    icon: CalendarDays,
+  },
+  {
+    title: "Total Patients",
+    value: 0,
+    icon: Users,
+  },
+  {
+    title: "Pending Reports",
+    value: 0,
+    icon: FileText,
+  },
+  {
+    title: "Completed Today",
+    value: 0,
+    icon: Activity,
+  },
+]);
+
+useEffect(() => {
+  const fetchDashboard = async () => {
+    try {
+      const res = await fetch(
+        "http://localhost:5000/api/doctor/dashboard"
+      );
+
+      const data = await res.json();
+
+      setStats([
+        {
+          title: "Today's Appointments",
+          value: data.stats.todayAppointments,
+          icon: CalendarDays,
+        },
+        {
+          title: "Total Patients",
+          value: data.stats.totalPatients,
+          icon: Users,
+        },
+        {
+          title: "Pending Reports",
+          value: data.stats.totalLabReports,
+          icon: FileText,
+        },
+        {
+          title: "Completed Today",
+          value: data.stats.completedToday,
+          icon: Activity,
+        },
+      ]);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  fetchDashboard();
+}, []);
   return (
     <DashboardLayout>
 

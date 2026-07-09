@@ -44,9 +44,24 @@ const handleLogin = async (e: React.FormEvent) => {
     }
 
     localStorage.setItem("token", data.token);
-    localStorage.setItem("user", JSON.stringify(data.user));
+localStorage.setItem("user", JSON.stringify(data.user));
 
-    router.push("/pages/select-role");
+// If the user hasn't chosen a role yet,
+// send them to the role selector.
+// If they already have a role, send them directly.
+
+if (!localStorage.getItem("selectedRole")) {
+  router.push("/pages/select-role");
+  return;
+}
+
+const role = localStorage.getItem("selectedRole");
+
+if (role === "doctor") {
+  router.push("/pages/doctor");
+} else {
+  router.push("/dashboard");
+}
 
   } catch (err) {
     setError("Server unavailable.");

@@ -2,10 +2,70 @@
 
 import { User, Mail, Lock } from "lucide-react";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function RegisterPage() {
+  const router = useRouter();
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleRegister = async (
+    e: React.FormEvent<HTMLFormElement>
+  ) => {
+    e.preventDefault();
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await fetch(
+        "http://localhost:5000/api/auth/register",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            fullName,
+            email,
+            password,
+            confirmPassword,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.message);
+        setLoading(false);
+        return;
+      }
+
+      localStorage.setItem("token", data.token);
+
+      localStorage.setItem(
+        "user",
+        JSON.stringify(data.user)
+      );
+
+      router.push("/pages/login");
+
+    } catch (err) {
+      setError("Unable to connect to the server.");
+    }
+
+    setLoading(false);
+  };
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-slate-100 px-4">
@@ -19,9 +79,17 @@ export default function RegisterPage() {
           Join MediNexa AI
         </p>
 
-        <form className="space-y-5">
+        {error && (
+          <div className="mb-5 rounded-xl bg-red-100 p-3 text-sm text-red-600">
+            {error}
+          </div>
+        )}
 
-          <div>
+        <form
+          onSubmit={handleRegister}
+          className="space-y-5"
+        >
+                    <div>
             <label className="mb-2 block font-medium">
               Full Name
             </label>
@@ -34,8 +102,11 @@ export default function RegisterPage() {
 
               <input
                 type="text"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
                 placeholder="Faith Kerubo"
                 className="w-full rounded-xl border pl-10 pr-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
+                required
               />
             </div>
           </div>
@@ -53,8 +124,11 @@ export default function RegisterPage() {
 
               <input
                 type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder="faith@gmail.com"
                 className="w-full rounded-xl border pl-10 pr-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
+                required
               />
             </div>
           </div>
@@ -72,8 +146,11 @@ export default function RegisterPage() {
 
               <input
                 type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter Password"
                 className="w-full rounded-xl border pl-10 pr-12 py-3 outline-none focus:ring-2 focus:ring-blue-500"
+                required
               />
 
               <button
@@ -101,8 +178,13 @@ export default function RegisterPage() {
 
               <input
                 type={showConfirm ? "text" : "password"}
+                value={confirmPassword}
+                onChange={(e) =>
+                  setConfirmPassword(e.target.value)
+                }
                 placeholder="Confirm Password"
                 className="w-full rounded-xl border pl-10 pr-12 py-3 outline-none focus:ring-2 focus:ring-blue-500"
+                required
               />
 
               <button
@@ -118,9 +200,11 @@ export default function RegisterPage() {
           </div>
 
           <button
-            className="w-full rounded-xl bg-primary py-3 font-semibold text-white hover:opacity-90 transition"
+            type="submit"
+            disabled={loading}
+            className="w-full rounded-xl bg-primary py-3 font-semibold text-white hover:opacity-90 transition disabled:opacity-50"
           >
-            Create Account
+            {loading ? "Creating Account..." : "Create Account"}
           </button>
 
         </form>

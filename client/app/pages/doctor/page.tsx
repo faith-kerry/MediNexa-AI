@@ -1,5 +1,5 @@
 "use client";
-
+import Link from "next/link";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import {
   Users,
@@ -43,7 +43,7 @@ export default function DoctorDashboard() {
           <div>
 
             <h1 className="text-4xl font-bold text-slate-800 dark:text-white">
-              Welcome back, Doctor 👋
+              Good Morning, Dr. Faith 👋
             </h1>
 
             <p className="text-slate-500 mt-2">
@@ -222,27 +222,29 @@ export default function DoctorDashboard() {
       {/* Quick Actions */}
 
       <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-6">        {[
-          {
-            title: "Write Prescription",
-            description:
-              "Create and manage patient prescriptions.",
-          },
-          {
-            title: "AI Medical Assistant",
-            description:
-              "Consult MediNexa AI for clinical support.",
-          },
-          {
-            title: "Lab Reports",
-            description:
-              "Review uploaded laboratory results.",
-          },
-          {
-            title: "Patient Records",
-            description:
-              "Access complete medical histories.",
-          },
-        ].map((action, index) => (
+          
+  {
+    title: "Write Prescription",
+    description: "Create and manage patient prescriptions.",
+    link: "/pages/prescriptions",
+  },
+  {
+    title: "AI Medical Assistant",
+    description: "Consult MediNexa AI for clinical support.",
+    link: "/pages/ai-chat",
+  },
+  {
+    title: "Lab Reports",
+    description: "Review uploaded laboratory results.",
+    link: "/pages/lab-results",
+  },
+  {
+    title: "Patient Records",
+    description: "Access complete medical histories.",
+    link: "/pages/medical-records",
+  },
+]
+        .map((action, index) => (
           <div
             key={index}
             className="bg-white dark:bg-slate-900 rounded-3xl shadow-md border border-slate-200 dark:border-slate-700 p-6 hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
@@ -255,9 +257,11 @@ export default function DoctorDashboard() {
               {action.description}
             </p>
 
-            <button className="mt-6 w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-2xl font-semibold transition">
-              Open
-            </button>
+            <Link href={action.link}>
+  <button className="mt-6 w-full rounded-2xl bg-emerald-600 py-3 font-semibold text-white transition hover:bg-emerald-700">
+    Open
+  </button>
+</Link>
           </div>
         ))}
 

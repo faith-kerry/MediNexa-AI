@@ -1,40 +1,77 @@
+const prisma = require("../lib/prisma");
+
+// =========================
+// BOOK APPOINTMENT
+// =========================
 exports.bookAppointment = async (req, res) => {
   try {
-    const {
-      patientName,
-      doctor,
-      specialty,
-      date,
-      time,
-      reason,
-    } = req.body;
+    const { hospitalId, appointmentDate, reason } = req.body;
 
-    if (
-      !patientName ||
-      !doctor ||
-      !specialty ||
-      !date ||
-      !time
-    ) {
+    if (!hospitalId || !appointmentDate || !reason) {
       return res.status(400).json({
         success: false,
         message: "Please fill all required fields.",
       });
     }
 
+    const appointment = await prisma.appointment.create({
+      data: {
+        patientId: req.user.id,
+        hospitalId,
+        appointmentDate: new Date(appointmentDate),
+        reason,
+      },
+      include: {
+        hospital: true,
+        patient: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+          },
+        },
+      },
+    });
+
     return res.status(201).json({
       success: true,
       message: "Appointment booked successfully.",
-      appointment: {
-        patientName,
-        doctor,
-        specialty,
-        date,
-        time,
-        reason,
-      },
+      appointment,
     });
   } catch (error) {
+    console.error(error);
+
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// =========================
+// GET MY APPOINTMENTS
+// =========================
+exports.getAppointments = async (req, res) => {
+  try {
+    const appointments = await prisma.appointment.findMany({
+      where: {
+        patientId: req.user.id,
+      },
+      include: {
+        hospital: true,
+      },
+      orderBy: {
+        appointmentDate: "asc",
+      },
+    });
+
+    return res.status(200).json({
+      success: true,
+      appointments,
+    });
+  } catch (error) {
+    console.error(error);
+
     return res.status(500).json({
       success: false,
       message: error.message,

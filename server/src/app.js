@@ -10,7 +10,8 @@ const translatorRoutes = require("./routes/translatorRoutes");
 const appointmentRoutes = require("./routes/appointmentRoutes");
 const doctorRoutes = require("./routes/doctorRoutes");
 const labRoutes = require("./routes/labRoutes");
-
+const dashboardRoutes = require("./routes/dashboardRoutes");
+const hospitalRoutes = require("./routes/hospitalRoutes");
 const app = express();
 
 // =========================
@@ -35,6 +36,8 @@ app.use("/api/auth", authRoutes);
 
 app.use("/api/ai", aiRoutes);
 
+app.use("/api/dashboard", dashboardRoutes);
+
 app.use("/api/translator", translatorRoutes);
 
 app.use("/api/appointments", appointmentRoutes);
@@ -42,6 +45,8 @@ app.use("/api/appointments", appointmentRoutes);
 app.use("/api/doctor", doctorRoutes);
 
 app.use("/api/lab", labRoutes);
+
+app.use("/api/hospitals", hospitalRoutes);
 
 // =========================
 // Home Route

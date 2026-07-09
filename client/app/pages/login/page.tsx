@@ -46,7 +46,7 @@ const handleLogin = async (e: React.FormEvent) => {
     localStorage.setItem("token", data.token);
     localStorage.setItem("user", JSON.stringify(data.user));
 
-    router.push("/pages/dashboard");
+    router.push("/pages/select-role");
 
   } catch (err) {
     setError("Server unavailable.");

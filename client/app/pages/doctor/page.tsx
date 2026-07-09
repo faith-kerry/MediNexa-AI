@@ -1,4 +1,5 @@
 "use client";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import {
@@ -9,28 +10,8 @@ import {
   Search,
 } from "lucide-react";
 
-const stats = [
-  {
-    title: "Today's Appointments",
-    value: "12",
-    icon: CalendarDays,
-  },
-  {
-    title: "Total Patients",
-    value: "148",
-    icon: Users,
-  },
-  {
-    title: "Pending Reports",
-    value: "5",
-    icon: FileText,
-  },
-  {
-    title: "Completed Today",
-    value: "9",
-    icon: Activity,
-  },
-];
+
+  
 
 export default function DoctorDashboard() {
   return (

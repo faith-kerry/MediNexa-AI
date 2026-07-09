@@ -14,6 +14,7 @@ const dashboardRoutes = require("./routes/dashboardRoutes");
 const hospitalRoutes = require("./routes/hospitalRoutes");
 const app = express();
 
+
 // =========================
 // Middleware
 // =========================

@@ -14,24 +14,36 @@ export default function DashboardLayout({
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   return (
-    <div className="flex h-screen bg-slate-50">
+    <div className="flex min-h-screen bg-emerald-50">
 
+      {/* Sidebar */}
       <Sidebar
         open={sidebarOpen}
         setOpen={setSidebarOpen}
       />
 
+      {/* Right Content */}
       <div className="flex flex-1 flex-col overflow-hidden">
 
+        {/* Top Navigation */}
         <Topbar
           sidebarOpen={sidebarOpen}
           setSidebarOpen={setSidebarOpen}
         />
 
-        <main className="flex-1 overflow-y-auto bg-slate-50 px-8 py-8">
+        {/* Page Content */}
+        <main className="flex-1 overflow-y-auto bg-emerald-50 p-6">
+
           <div className="mx-auto max-w-7xl">
-            {children}
+
+            <div className="min-h-full rounded-3xl border border-emerald-100 bg-white p-8 shadow-sm">
+
+              {children}
+
+            </div>
+
           </div>
+
         </main>
 
       </div>

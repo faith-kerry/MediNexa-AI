@@ -2,9 +2,9 @@ const express = require("express");
 const router = express.Router();
 
 const {
-  getDashboard,
+  getDashboardStats,
 } = require("../controllers/doctorController");
 
-router.get("/dashboard", getDashboard);
+router.get("/dashboard", getDashboardStats);
 
 module.exports = router;

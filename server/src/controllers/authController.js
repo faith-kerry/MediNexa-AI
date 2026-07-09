@@ -74,6 +74,8 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
+    console.log("Email:", email);
+    console.log("Password:", password);
 
     if (!email || !password) {
       return res.status(400).json({
@@ -99,6 +101,8 @@ exports.login = async (req, res) => {
       password,
       user.password
     );
+
+    console.log("Password Match:", validPassword);
 
     if (!validPassword) {
       return res.status(401).json({
@@ -133,6 +137,7 @@ exports.login = async (req, res) => {
 // FORGOT PASSWORD
 // =========================
 exports.forgotPassword = async (req, res) => {
+  console.log("Forgot password request received");
   return res.json({
     success: true,
     message: "Forgot password endpoint working",

@@ -1,45 +1,107 @@
 "use client";
 
+import { useEffect, useState } from "react";
+
 import DashboardLayout from "@/components/layout/DashboardLayout";
+
 import {
   FileText,
-  Download,
   CalendarDays,
   ShieldCheck,
   Plus,
+  Trash2,
+  Loader2,
 } from "lucide-react";
 
-const records = [
-  {
-    id: 1,
-    title: "General Checkup",
-    hospital: "Nairobi Hospital",
-    date: "12 June 2026",
-    doctor: "Dr. Sarah Kimani",
-  },
-  {
-    id: 2,
-    title: "Blood Test Results",
-    hospital: "Aga Khan Hospital",
-    date: "30 May 2026",
-    doctor: "Dr. James Otieno",
-  },
-  {
-    id: 3,
-    title: "Chest X-Ray",
-    hospital: "Kenyatta National Hospital",
-    date: "14 April 2026",
-    doctor: "Dr. Mercy Wanjiku",
-  },
-];
+import {
+  getMedicalRecords,
+  createMedicalRecord,
+  deleteMedicalRecord,
+} from "@/services/medicalRecordService";
 
-export default function Page() {
+interface MedicalRecord {
+  id: string;
+  title: string;
+  description: string;
+  fileUrl?: string;
+  createdAt: string;
+}
+
+export default function MedicalRecordsPage() {
+  const [records, setRecords] = useState<MedicalRecord[]>([]);
+
+  const [loading, setLoading] = useState(true);
+
+  const [saving, setSaving] = useState(false);
+
+  const [title, setTitle] = useState("");
+
+  const [description, setDescription] = useState("");
+
+  const [fileUrl, setFileUrl] = useState("");
+
+  const loadRecords = async () => {
+    try {
+      const data = await getMedicalRecords();
+
+      setRecords(data.records);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadRecords();
+  }, []);
+
+  const handleCreate = async () => {
+    if (!title || !description) {
+      alert("Please enter the title and description.");
+      return;
+    }
+
+    try {
+      setSaving(true);
+
+      await createMedicalRecord({
+        title,
+        description,
+        fileUrl,
+      });
+
+      setTitle("");
+      setDescription("");
+      setFileUrl("");
+
+      await loadRecords();
+    } catch (error) {
+      console.error(error);
+      alert("Unable to create medical record.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Delete this medical record?")) return;
+
+    try {
+      await deleteMedicalRecord(id);
+
+      await loadRecords();
+    } catch (error) {
+      console.error(error);
+      alert("Unable to delete record.");
+    }
+  };
+
   return (
     <DashboardLayout>
-
       <div className="space-y-8">
 
-        <div className="flex justify-between items-center">
+        <div className="flex items-center justify-between">
 
           <div>
 
@@ -47,28 +109,35 @@ export default function Page() {
               Medical Records
             </h1>
 
-            <p className="text-slate-500 mt-2">
-              Securely store and manage your medical history.
+            <p className="mt-2 text-slate-500">
+              Securely manage your medical history.
             </p>
 
           </div>
 
-          <button className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl flex items-center gap-2 transition">
+          <button
+            onClick={handleCreate}
+            disabled={saving}
+            className="flex items-center gap-2 rounded-xl bg-green-600 px-6 py-3 font-semibold text-white transition hover:bg-green-700 disabled:opacity-60"
+          >
+            {saving ? (
+              <Loader2
+                size={18}
+                className="animate-spin"
+              />
+            ) : (
+              <Plus size={18} />
+            )}
 
-            <Plus size={20} />
-
-            Add Record
-
+            {saving ? "Saving..." : "Add Record"}
           </button>
 
-        </div>
+        </div>        <div className="grid gap-6 md:grid-cols-3">
 
-        <div className="grid md:grid-cols-3 gap-6">
-
-          <div className="bg-white rounded-2xl shadow border p-6">
+          <div className="rounded-2xl border bg-white p-6 shadow">
 
             <ShieldCheck
-              className="text-green-600 mb-4"
+              className="mb-4 text-green-600"
               size={34}
             />
 
@@ -76,109 +145,180 @@ export default function Page() {
               {records.length}
             </h2>
 
-            <p className="text-slate-500 mt-2">
+            <p className="mt-2 text-slate-500">
               Total Records
             </p>
 
           </div>
 
-          <div className="bg-white rounded-2xl shadow border p-6">
+          <div className="rounded-2xl border bg-white p-6 shadow">
 
             <FileText
-              className="text-green-600 mb-4"
+              className="mb-4 text-green-600"
               size={34}
             />
 
             <h2 className="text-3xl font-bold">
-              5
+              {records.length}
             </h2>
 
-            <p className="text-slate-500 mt-2">
-              Prescriptions
+            <p className="mt-2 text-slate-500">
+              Medical Documents
             </p>
 
           </div>
 
-          <div className="bg-white rounded-2xl shadow border p-6">
+          <div className="rounded-2xl border bg-white p-6 shadow">
 
             <CalendarDays
-              className="text-green-600 mb-4"
+              className="mb-4 text-green-600"
               size={34}
             />
 
             <h2 className="text-3xl font-bold">
-              3
+              {records.length > 0 ? "Available" : "None"}
             </h2>
 
-            <p className="text-slate-500 mt-2">
-              Recent Visits
+            <p className="mt-2 text-slate-500">
+              Latest Records
             </p>
 
           </div>
 
         </div>
 
-        <div className="bg-white rounded-3xl shadow border overflow-hidden">
+        <div className="rounded-3xl border bg-white p-8 shadow">
 
-          <div className="px-6 py-5 border-b">
+          <h2 className="mb-6 text-2xl font-bold">
+            Add Medical Record
+          </h2>
+
+          <div className="space-y-5">
+
+            <input
+              type="text"
+              placeholder="Record title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="w-full rounded-xl border px-4 py-3 outline-none focus:border-green-600"
+            />
+
+            <textarea
+              rows={5}
+              placeholder="Description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="w-full resize-none rounded-xl border px-4 py-3 outline-none focus:border-green-600"
+            />
+
+            <input
+              type="text"
+              placeholder="File URL (optional)"
+              value={fileUrl}
+              onChange={(e) => setFileUrl(e.target.value)}
+              className="w-full rounded-xl border px-4 py-3 outline-none focus:border-green-600"
+            />
+
+          </div>
+
+        </div>
+
+        <div className="rounded-3xl border bg-white shadow overflow-hidden">
+
+          <div className="border-b px-6 py-5">
 
             <h2 className="text-2xl font-bold">
               Medical History
             </h2>
 
+          </div>        {loading ? (
+
+          <div className="flex justify-center py-16">
+
+            <Loader2
+              className="animate-spin text-green-600"
+              size={40}
+            />
+
           </div>
 
-          <div>
+        ) : records.length === 0 ? (
 
-            {records.map((record) => (
+          <div className="p-12 text-center">
 
-              <div
-                key={record.id}
-                className="border-b last:border-b-0 p-6 flex justify-between items-center hover:bg-slate-50 transition"
-              >
+            <FileText
+              className="mx-auto mb-4 text-slate-400"
+              size={48}
+            />
 
-                <div>
+            <h3 className="text-xl font-semibold text-slate-700">
+              No medical records found
+            </h3>
 
-                  <h3 className="text-lg font-semibold">
-                    {record.title}
-                  </h3>
+            <p className="mt-2 text-slate-500">
+              Add your first medical record using the form above.
+            </p>
 
-                  <p className="text-slate-500 mt-1">
-                    {record.hospital}
-                  </p>
+          </div>
 
-                  <p className="text-sm text-slate-400 mt-2">
-                    {record.doctor}
-                  </p>
+        ) : (
 
-                </div>
+          records.map((record) => (
 
-                <div className="text-right">
+            <div
+              key={record.id}
+              className="flex items-center justify-between border-b p-6 transition hover:bg-slate-50 last:border-b-0"
+            >
 
-                  <p className="text-slate-600">
-                    {record.date}
-                  </p>
+              <div>
 
-                  <button className="mt-4 flex items-center gap-2 text-green-600 hover:text-green-700 font-medium">
+                <h3 className="text-lg font-semibold">
+                  {record.title}
+                </h3>
 
-                    <Download size={18} />
+                <p className="mt-2 text-slate-600">
+                  {record.description}
+                </p>
 
-                    Download
+                <p className="mt-3 text-sm text-slate-400">
+                  {new Date(record.createdAt).toLocaleDateString()}
+                </p>
 
-                  </button>
+                {record.fileUrl && (
 
-                </div>
+                  <a
+                    href={record.fileUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-3 inline-block font-medium text-green-600 hover:underline"
+                  >
+                    View Attachment
+                  </a>
+
+                )}
 
               </div>
 
-            ))}
+              <button
+                onClick={() => handleDelete(record.id)}
+                className="rounded-xl bg-red-100 p-3 text-red-600 transition hover:bg-red-200"
+              >
 
-          </div>
+                <Trash2 size={20} />
 
-        </div>
+              </button>
+
+            </div>
+
+          ))
+
+        )}
 
       </div>
 
-    </DashboardLayout>
-  );
+    </div>
+
+  </DashboardLayout>
+);
+
 }

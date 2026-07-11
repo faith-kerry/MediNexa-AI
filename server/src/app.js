@@ -13,6 +13,7 @@ const labRoutes = require("./routes/labRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
 const hospitalRoutes = require("./routes/hospitalRoutes");
 const app = express();
+const medicalRecordRoutes = require("./routes/medicalRecordRoutes");
 
 
 // =========================
@@ -48,6 +49,8 @@ app.use("/api/doctor", doctorRoutes);
 app.use("/api/lab", labRoutes);
 
 app.use("/api/hospitals", hospitalRoutes);
+
+app.use("/api/medical-records", medicalRecordRoutes);
 
 // =========================
 // Home Route

@@ -1,4 +1,5 @@
 const express = require("express");
+const path = require("path");
 const cors = require("cors");
 const helmet = require("helmet");
 const morgan = require("morgan");
@@ -29,6 +30,12 @@ app.use(cookieParser());
 app.use(helmet());
 
 app.use(morgan("dev"));
+
+// Serve uploaded files
+app.use(
+  "/uploads",
+  express.static(path.join(__dirname, "../uploads"))
+);
 
 // =========================
 // API Routes

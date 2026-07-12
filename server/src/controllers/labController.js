@@ -1,22 +1,33 @@
 const prisma = require("../lib/prisma");
 
+// =========================
 // Upload Lab Result
+// =========================
 exports.uploadLabResult = async (req, res) => {
   try {
-    const { title, fileUrl } = req.body;
+    const { title } = req.body;
 
-    if (!title || !fileUrl) {
+    if (!title) {
       return res.status(400).json({
         success: false,
-        message: "Title and file URL are required.",
+        message: "Report title is required.",
       });
     }
+
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "Please upload a file.",
+      });
+    }
+
+    const fileUrl = `/uploads/${req.file.filename}`;
 
     const labResult = await prisma.labResult.create({
       data: {
         title,
         fileUrl,
-        userId: "cmrd78yjo0000tk1lbndzqpnd"
+        userId: "cmrd78yjo0000tk1lbndzqpnd", // temporary until auth is connected
       },
     });
 
@@ -35,12 +46,14 @@ exports.uploadLabResult = async (req, res) => {
   }
 };
 
-// Get Logged-in User Lab Results
+// =========================
+// Get Lab Results
+// =========================
 exports.getLabResults = async (req, res) => {
   try {
     const labResults = await prisma.labResult.findMany({
       where: {
-        userId: "cmrd78yjo0000tk1lbndzqpnd"
+        userId: "cmrd78yjo0000tk1lbndzqpnd", // temporary until auth is connected
       },
       orderBy: {
         uploadedAt: "desc",
@@ -61,7 +74,9 @@ exports.getLabResults = async (req, res) => {
   }
 };
 
+// =========================
 // Delete Lab Result
+// =========================
 exports.deleteLabResult = async (req, res) => {
   try {
     const { id } = req.params;

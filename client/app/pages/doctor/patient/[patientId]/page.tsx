@@ -79,6 +79,51 @@ const [savingPrescription, setSavingPrescription] =
     }
   }
 
+  async function savePrescription() {
+  if (!medicine || !dosage || !instructions) {
+    alert("Please complete all prescription fields.");
+    return;
+  }
+
+  try {
+    setSavingPrescription(true);
+
+    const response = await fetch(
+      "http://localhost:5000/api/prescriptions",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: patient?.id,
+          medicine,
+          dosage,
+          instructions,
+        }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!data.success) {
+      throw new Error(data.message);
+    }
+
+    alert("Prescription saved successfully!");
+
+    setMedicine("");
+    setDosage("");
+    setInstructions("");
+
+  } catch (error) {
+    console.error(error);
+    alert("Failed to save prescription.");
+  } finally {
+    setSavingPrescription(false);
+  }
+}
+
   if (loading) {
     return (
       <DashboardLayout>
@@ -170,70 +215,142 @@ const [savingPrescription, setSavingPrescription] =
 
           )}
 
-        </div>        {/* Lab Results */}
+        </div>{/* Lab Results */}
 
-        <div className="rounded-3xl border border-emerald-100 bg-white p-8 shadow-sm">
+<div className="rounded-3xl border border-emerald-100 bg-white p-8 shadow-sm">
 
-          <h2 className="mb-6 text-2xl font-bold">
-            Lab Results
-          </h2>
+  <h2 className="mb-6 text-2xl font-bold">
+    Lab Results
+  </h2>
 
-          {patient.labResults.length === 0 ? (
+  {patient.labResults.length === 0 ? (
 
-            <p className="text-slate-500">
-              No lab results uploaded.
-            </p>
+    <p className="text-slate-500">
+      No lab results uploaded.
+    </p>
 
-          ) : (
+  ) : (
 
-            <div className="space-y-5">
+    <div className="space-y-5">
 
-              {patient.labResults.map((lab) => (
+      {patient.labResults.map((lab) => (
 
-                <div
-                  key={lab.id}
-                  className="rounded-2xl border border-slate-200 p-5"
-                >
+        <div
+          key={lab.id}
+          className="rounded-2xl border border-slate-200 p-5"
+        >
 
-                  <h3 className="text-lg font-semibold text-slate-800">
-                    {lab.title}
-                  </h3>
+          <h3 className="text-lg font-semibold text-slate-800">
+            {lab.title}
+          </h3>
 
-                  <a
-                    href={lab.fileUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-4 inline-block text-emerald-600 hover:underline"
-                  >
-                    View Lab Report
-                  </a>
+          <a
+            href={lab.fileUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-4 inline-block text-emerald-600 hover:underline"
+          >
+            View Lab Report
+          </a>
 
-                  {lab.aiExplanation && (
+          {lab.aiExplanation && (
 
-                    <div className="mt-5 rounded-2xl bg-emerald-50 p-5">
+            <div className="mt-5 rounded-2xl bg-emerald-50 p-5">
 
-                      <h4 className="font-semibold text-emerald-700">
-                        AI Explanation
-                      </h4>
+              <h4 className="font-semibold text-emerald-700">
+                AI Explanation
+              </h4>
 
-                      <p className="mt-2 text-slate-700">
-                        {lab.aiExplanation}
-                      </p>
-
-                    </div>
-
-                  )}
-
-                </div>
-
-              ))}
+              <p className="mt-2 text-slate-700">
+                {lab.aiExplanation}
+              </p>
 
             </div>
 
           )}
 
-        </div>      </div>
+        </div>
 
-    </DashboardLayout>
-  );
-}
+      ))}
+
+    </div>
+
+  )}
+
+</div>
+
+{/* Prescription */}
+
+<div className="rounded-3xl border border-emerald-100 bg-white p-8 shadow-sm">
+
+  <h2 className="mb-6 text-2xl font-bold">
+    Write Prescription
+  </h2>
+
+  <div className="space-y-5">
+
+    <div>
+
+      <label className="mb-2 block font-medium">
+        Medicine
+      </label>
+
+      <input
+        type="text"
+        value={medicine}
+        onChange={(e) => setMedicine(e.target.value)}
+        placeholder="e.g. Amoxicillin"
+        className="w-full rounded-xl border border-slate-300 p-3"
+      />
+
+    </div>
+
+    <div>
+
+      <label className="mb-2 block font-medium">
+        Dosage
+      </label>
+
+      <input
+        type="text"
+        value={dosage}
+        onChange={(e) => setDosage(e.target.value)}
+        placeholder="e.g. 500mg twice daily"
+        className="w-full rounded-xl border border-slate-300 p-3"
+      />
+
+    </div>
+
+    <div>
+
+      <label className="mb-2 block font-medium">
+        Instructions
+      </label>
+
+      <textarea
+        rows={5}
+        value={instructions}
+        onChange={(e) => setInstructions(e.target.value)}
+        placeholder="Take after meals for 7 days..."
+        className="w-full rounded-xl border border-slate-300 p-3"
+      />
+
+    </div>
+
+    <button
+      onClick={savePrescription}
+      disabled={savingPrescription}
+      className="rounded-xl bg-emerald-600 px-6 py-3 font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50"
+    >
+      {savingPrescription ? "Saving..." : "Save Prescription"}
+    </button>
+
+  </div>
+
+</div>
+
+</div>
+
+</DashboardLayout>
+);
+}        

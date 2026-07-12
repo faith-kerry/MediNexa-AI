@@ -1,219 +1,340 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
 import DashboardLayout from "@/components/layout/DashboardLayout";
+
 import {
   UploadCloud,
   FileText,
   Loader2,
-  Sparkles,
+  Trash2,
+  Plus,
+  CheckCircle2,
+  AlertCircle,
 } from "lucide-react";
 
+import {
+  getLabResults,
+  uploadLabResult,
+  deleteLabResult,
+} from "@/services/labService";
+
+interface LabResult {
+  id: string;
+  title: string;
+  fileUrl: string;
+  aiExplanation?: string;
+  uploadedAt: string;
+}
+
 export default function LabResultsPage() {
-  const [reportText, setReportText] = useState("");
-  const [analysis, setAnalysis] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [labResults, setLabResults] = useState<LabResult[]>([]);
 
-  const handleAnalyze = async () => {
-    if (!reportText.trim()) return;
+  const [title, setTitle] = useState("");
 
-    setLoading(true);
+  const [fileUrl, setFileUrl] = useState("");
 
+  const [loading, setLoading] = useState(true);
+
+  const [saving, setSaving] = useState(false);
+
+  const [message, setMessage] = useState("");
+
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const loadLabResults = async () => {
     try {
-      const response = await fetch(
-        "http://localhost:5000/api/lab/analyze",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            reportText,
-          }),
-        }
+      setLoading(true);
+
+      const data = await getLabResults();
+
+      setLabResults(data.labResults || []);
+    } catch (error) {
+      console.error(error);
+
+      setErrorMessage("Unable to load lab results.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadLabResults();
+  }, []);
+
+  const handleUpload = async () => {
+    if (!title.trim() || !fileUrl.trim()) {
+      setErrorMessage(
+        "Please enter both the report title and the file URL."
       );
 
-      const data = await response.json();
+      setMessage("");
 
-      setAnalysis(data.analysis);
-    } catch {
-      alert("Unable to analyze report.");
+      return;
     }
 
-    setLoading(false);
+    try {
+      setSaving(true);
+
+      setMessage("");
+
+      setErrorMessage("");
+
+      await uploadLabResult({
+        title,
+        fileUrl,
+      });
+
+      setTitle("");
+
+      setFileUrl("");
+
+      await loadLabResults();
+
+      setMessage("Lab result uploaded successfully.");
+    } catch (error) {
+      console.error(error);
+
+      setErrorMessage(
+        "Unable to upload the laboratory report. Please try again."
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Delete this lab result?")) return;
+
+    try {
+      await deleteLabResult(id);
+
+      await loadLabResults();
+
+      setMessage("Lab result deleted successfully.");
+
+      setErrorMessage("");
+    } catch (error) {
+      console.error(error);
+
+      setErrorMessage("Unable to delete lab result.");
+    }
   };
 
   return (
     <DashboardLayout>
-
       <div className="space-y-8">
 
         <div>
 
-          <h1 className="text-4xl font-bold text-slate-800 dark:text-white">
-            Lab Results Analysis
+          <h1 className="text-4xl font-bold text-slate-800">
+            Lab Results
           </h1>
 
-          <p className="text-slate-500 mt-2">
-            Paste your laboratory report below and let MediNexa AI explain it in simple language.
+          <p className="mt-2 text-slate-500">
+            Upload and manage laboratory reports securely.
           </p>
 
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-8">        {/* LEFT PANEL */}
+        {message && (
+          <div className="flex items-center gap-3 rounded-2xl border border-green-200 bg-green-50 p-4 text-green-700">
+            <CheckCircle2 size={22} />
+            <span>{message}</span>
+          </div>
+        )}
 
-        <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-lg p-8">
+        {errorMessage && (
+          <div className="flex items-center gap-3 rounded-2xl border border-red-200 bg-red-50 p-4 text-red-700">
+            <AlertCircle size={22} />
+            <span>{errorMessage}</span>
+          </div>
+        )}
 
-          <div className="flex items-center gap-3 mb-6">
+        <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
 
-            <div className="w-14 h-14 rounded-2xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-              <UploadCloud
-                size={28}
-                className="text-emerald-600"
+          <div className="mb-6 flex items-center gap-3">
+
+            <UploadCloud
+              className="text-green-600"
+              size={32}
+            />
+
+            <h2 className="text-2xl font-bold">
+              Upload Lab Result
+            </h2>
+
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-2">
+
+            <div>
+
+              <label className="mb-2 block font-medium">
+                Report Title
+              </label>
+
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="e.g. Full Blood Count"
+                className="w-full rounded-xl border p-3 outline-none focus:ring-2 focus:ring-green-500"
               />
+
             </div>
 
             <div>
 
-              <h2 className="text-2xl font-bold">
-                Upload Report
-              </h2>
+              <label className="mb-2 block font-medium">
+                File URL
+              </label>
 
-              <p className="text-slate-500 text-sm mt-1">
-                Paste your laboratory results below.
-              </p>
+              <input
+                type="text"
+                value={fileUrl}
+                onChange={(e) => setFileUrl(e.target.value)}
+                placeholder="https://example.com/report.pdf"
+                className="w-full rounded-xl border p-3 outline-none focus:ring-2 focus:ring-green-500"
+              />
 
             </div>
 
           </div>
-
-          <label className="font-semibold">
-            Laboratory Report
-          </label>
-
-          <textarea
-            rows={16}
-            value={reportText}
-            onChange={(e) =>
-              setReportText(e.target.value)
-            }
-            placeholder="Example:
-
-Hemoglobin: 14.5 g/dL
-Blood Sugar: 95 mg/dL
-Cholesterol: 215 mg/dL
-
-Paste your report here..."
-            className="w-full mt-3 border border-slate-300 dark:border-slate-700 rounded-2xl p-5 resize-none focus:outline-none focus:ring-2 focus:ring-emerald-600 dark:bg-slate-800"
-          />
 
           <button
-            onClick={handleAnalyze}
-            disabled={loading}
-            className="mt-6 w-full bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white rounded-2xl py-4 font-semibold flex items-center justify-center gap-3 transition"
+            onClick={handleUpload}
+            disabled={saving}
+            className="mt-6 flex items-center gap-2 rounded-xl bg-green-600 px-6 py-3 font-semibold text-white transition hover:bg-green-700 disabled:opacity-60"
           >
-
-            {loading ? (
+            {saving ? (
               <>
                 <Loader2
-                  size={22}
                   className="animate-spin"
+                  size={20}
                 />
-
-                Analyzing Report...
-
+                Uploading...
               </>
             ) : (
               <>
-                <Sparkles size={22} />
-
-                Analyze with MediNexa AI
-
+                <Plus size={20} />
+                Upload Lab Result
               </>
             )}
-
           </button>
 
-        </div>        {/* RIGHT PANEL */}
+        </div>        <div className="rounded-3xl border border-slate-200 bg-white shadow-sm">
 
-        <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-lg p-8">
+          <div className="border-b p-6">
 
-          <div className="flex items-center gap-3 mb-6">
-
-            <div className="w-14 h-14 rounded-2xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-              <FileText
-                size={28}
-                className="text-emerald-600"
-              />
-            </div>
-
-            <div>
-
-              <h2 className="text-2xl font-bold">
-                AI Analysis
-              </h2>
-
-              <p className="text-slate-500 text-sm mt-1">
-                MediNexa AI explains your report in simple language.
-              </p>
-
-            </div>
+            <h2 className="text-2xl font-bold">
+              Uploaded Lab Results
+            </h2>
 
           </div>
 
-          <div className="min-h-[500px] rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-6 whitespace-pre-wrap leading-8">
+          <div>
 
-            {analysis ? (
-              analysis
-            ) : (
-              <div className="h-full flex flex-col items-center justify-center text-slate-400">
+            {loading ? (
 
-                <FileText
-                  size={70}
-                  className="mb-6"
+              <div className="flex justify-center py-16">
+
+                <Loader2
+                  size={40}
+                  className="animate-spin text-green-600"
                 />
 
-                <h3 className="text-xl font-semibold mb-3">
-                  No Analysis Yet
+              </div>
+
+            ) : labResults.length === 0 ? (
+
+              <div className="py-16 text-center text-slate-500">
+
+                <FileText
+                  size={60}
+                  className="mx-auto mb-4 text-slate-300"
+                />
+
+                <h3 className="text-xl font-semibold">
+                  No Lab Results Yet
                 </h3>
 
-                <p className="text-center max-w-sm">
-                  Paste your laboratory report on the left and
-                  click <strong>Analyze with MediNexa AI</strong>.
-                  Your explanation will appear here.
+                <p className="mt-2">
+                  Upload your first laboratory report above.
                 </p>
 
               </div>
+
+            ) : (
+
+              labResults.map((report) => (
+
+                <div
+                  key={report.id}
+                  className="border-b last:border-b-0 p-6"
+                >
+
+                  <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
+
+                    <div className="flex-1">
+
+                      <h3 className="text-xl font-bold text-slate-800">
+                        {report.title}
+                      </h3>
+
+                      <p className="mt-2 text-sm text-slate-500">
+                        Uploaded on{" "}
+                        {new Date(report.uploadedAt).toLocaleDateString()}
+                      </p>
+
+                      <a
+                        href={report.fileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-4 inline-flex rounded-lg bg-green-100 px-4 py-2 font-medium text-green-700 transition hover:bg-green-200"
+                      >
+                        View Report
+                      </a>
+
+                      {report.aiExplanation && (
+
+                        <div className="mt-6 rounded-2xl border border-green-100 bg-green-50 p-5">
+
+                          <h4 className="font-semibold text-green-700">
+                            AI Explanation
+                          </h4>
+
+                          <p className="mt-3 whitespace-pre-wrap leading-7 text-slate-700">
+                            {report.aiExplanation}
+                          </p>
+
+                        </div>
+
+                      )}
+
+                    </div>
+
+                    <button
+                      onClick={() => handleDelete(report.id)}
+                      className="flex h-12 w-12 items-center justify-center rounded-xl bg-red-100 text-red-600 transition hover:bg-red-200"
+                    >
+
+                      <Trash2 size={20} />
+
+                    </button>
+
+                  </div>
+
+                </div>
+
+              ))
+
             )}
 
           </div>
 
-          {analysis && (
-
-            <div className="mt-6 rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-700 p-5">
-
-              <h3 className="font-bold text-emerald-700 dark:text-emerald-400 mb-3">
-                Important Note
-              </h3>
-
-              <p className="text-slate-700 dark:text-slate-300 leading-7">
-                This explanation is generated by MediNexa AI to
-                help you better understand your laboratory
-                results. It should not replace advice from a
-                qualified healthcare professional. Always consult
-                your doctor before making medical decisions.
-              </p>
-
-            </div>
-
-          )}
-
-        </div>
-
-      </div>
-
-    </div>
-
-  </DashboardLayout>
-);
+        </div>      </div>
+    </DashboardLayout>
+  );
 }

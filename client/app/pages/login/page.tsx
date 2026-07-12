@@ -60,7 +60,7 @@ const role = localStorage.getItem("selectedRole");
 if (role === "doctor") {
   router.push("/pages/doctor");
 } else {
-  router.push("/dashboard");
+  router.push("/pages/dashboard");
 }
 
   } catch (err) {

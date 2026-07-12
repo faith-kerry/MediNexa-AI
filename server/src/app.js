@@ -15,6 +15,7 @@ const dashboardRoutes = require("./routes/dashboardRoutes");
 const hospitalRoutes = require("./routes/hospitalRoutes");
 const app = express();
 const medicalRecordRoutes = require("./routes/medicalRecordRoutes");
+const prescriptionRoutes = require("./routes/prescriptionRoutes");
 
 
 // =========================
@@ -58,6 +59,8 @@ app.use("/api/lab", labRoutes);
 app.use("/api/hospitals", hospitalRoutes);
 
 app.use("/api/medical-records", medicalRecordRoutes);
+
+app.use("/api/prescriptions", prescriptionRoutes);
 
 // =========================
 // Home Route

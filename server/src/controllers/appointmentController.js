@@ -78,3 +78,50 @@ exports.getAppointments = async (req, res) => {
     });
   }
 };
+
+// =========================
+// CANCEL APPOINTMENT
+// =========================
+exports.cancelAppointment = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const appointment = await prisma.appointment.findUnique({
+      where: { id },
+    });
+
+    if (!appointment) {
+      return res.status(404).json({
+        success: false,
+        message: "Appointment not found.",
+      });
+    }
+
+    if (appointment.patientId !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: "Unauthorized.",
+      });
+    }
+
+    const updatedAppointment = await prisma.appointment.update({
+      where: { id },
+      data: {
+        status: "CANCELLED",
+      },
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Appointment cancelled successfully.",
+      appointment: updatedAppointment,
+    });
+  } catch (error) {
+    console.error(error);
+
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};

@@ -10,8 +10,7 @@ import {
   Loader2,
   Trash2,
   Plus,
-  CheckCircle2,
-  AlertCircle,
+  CheckCircle,
 } from "lucide-react";
 
 import {
@@ -33,7 +32,7 @@ export default function LabResultsPage() {
 
   const [title, setTitle] = useState("");
 
-  const [fileUrl, setFileUrl] = useState("");
+  const [file, setFile] = useState<File | null>(null);
 
   const [loading, setLoading] = useState(true);
 
@@ -41,19 +40,15 @@ export default function LabResultsPage() {
 
   const [message, setMessage] = useState("");
 
-  const [errorMessage, setErrorMessage] = useState("");
+  const [error, setError] = useState("");
 
   const loadLabResults = async () => {
     try {
-      setLoading(true);
-
       const data = await getLabResults();
 
-      setLabResults(data.labResults || []);
-    } catch (error) {
-      console.error(error);
-
-      setErrorMessage("Unable to load lab results.");
+      setLabResults(data.labResults);
+    } catch (err) {
+      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -64,41 +59,29 @@ export default function LabResultsPage() {
   }, []);
 
   const handleUpload = async () => {
-    if (!title.trim() || !fileUrl.trim()) {
-      setErrorMessage(
-        "Please enter both the report title and the file URL."
-      );
-
-      setMessage("");
-
+    if (!title || !file) {
+      setError("Please provide a report title and choose a file.");
       return;
     }
 
     try {
       setSaving(true);
+      setError("");
 
-      setMessage("");
-
-      setErrorMessage("");
-
-      await uploadLabResult({
-        title,
-        fileUrl,
-      });
+      await uploadLabResult(title, file);
 
       setTitle("");
+      setFile(null);
 
-      setFileUrl("");
+      setMessage("Lab report uploaded successfully.");
+
+      setTimeout(() => {
+        setMessage("");
+      }, 3000);
 
       await loadLabResults();
-
-      setMessage("Lab result uploaded successfully.");
-    } catch (error) {
-      console.error(error);
-
-      setErrorMessage(
-        "Unable to upload the laboratory report. Please try again."
-      );
+    } catch (err: any) {
+      setError(err.message);
     } finally {
       setSaving(false);
     }
@@ -110,20 +93,21 @@ export default function LabResultsPage() {
     try {
       await deleteLabResult(id);
 
+      setMessage("Lab report deleted successfully.");
+
+      setTimeout(() => {
+        setMessage("");
+      }, 3000);
+
       await loadLabResults();
-
-      setMessage("Lab result deleted successfully.");
-
-      setErrorMessage("");
-    } catch (error) {
-      console.error(error);
-
-      setErrorMessage("Unable to delete lab result.");
+    } catch {
+      setError("Unable to delete lab result.");
     }
   };
 
   return (
     <DashboardLayout>
+
       <div className="space-y-8">
 
         <div>
@@ -140,15 +124,19 @@ export default function LabResultsPage() {
 
         {message && (
           <div className="flex items-center gap-3 rounded-2xl border border-green-200 bg-green-50 p-4 text-green-700">
-            <CheckCircle2 size={22} />
-            <span>{message}</span>
+
+            <CheckCircle size={22} />
+
+            <p className="font-medium">
+              {message}
+            </p>
+
           </div>
         )}
 
-        {errorMessage && (
-          <div className="flex items-center gap-3 rounded-2xl border border-red-200 bg-red-50 p-4 text-red-700">
-            <AlertCircle size={22} />
-            <span>{errorMessage}</span>
+        {error && (
+          <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-red-700">
+            {error}
           </div>
         )}
 
@@ -167,7 +155,7 @@ export default function LabResultsPage() {
 
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid gap-6">
 
             <div>
 
@@ -188,15 +176,16 @@ export default function LabResultsPage() {
             <div>
 
               <label className="mb-2 block font-medium">
-                File URL
+                Choose File
               </label>
 
               <input
-                type="text"
-                value={fileUrl}
-                onChange={(e) => setFileUrl(e.target.value)}
-                placeholder="https://example.com/report.pdf"
-                className="w-full rounded-xl border p-3 outline-none focus:ring-2 focus:ring-green-500"
+                type="file"
+                accept=".pdf,.jpg,.jpeg,.png"
+                onChange={(e) =>
+                  setFile(e.target.files?.[0] || null)
+                }
+                className="w-full rounded-xl border p-3"
               />
 
             </div>
@@ -206,8 +195,9 @@ export default function LabResultsPage() {
           <button
             onClick={handleUpload}
             disabled={saving}
-            className="mt-6 flex items-center gap-2 rounded-xl bg-green-600 px-6 py-3 font-semibold text-white transition hover:bg-green-700 disabled:opacity-60"
+            className="mt-6 flex items-center gap-2 rounded-xl bg-green-600 px-6 py-3 font-semibold text-white hover:bg-green-700 disabled:opacity-60"
           >
+
             {saving ? (
               <>
                 <Loader2
@@ -222,6 +212,7 @@ export default function LabResultsPage() {
                 Upload Lab Result
               </>
             )}
+
           </button>
 
         </div>        <div className="rounded-3xl border border-slate-200 bg-white shadow-sm">
@@ -289,7 +280,7 @@ export default function LabResultsPage() {
                       </p>
 
                       <a
-                        href={report.fileUrl}
+                        href={`http://localhost:5000${report.fileUrl}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="mt-4 inline-flex rounded-lg bg-green-100 px-4 py-2 font-medium text-green-700 transition hover:bg-green-200"
@@ -335,6 +326,7 @@ export default function LabResultsPage() {
           </div>
 
         </div>      </div>
+
     </DashboardLayout>
   );
 }

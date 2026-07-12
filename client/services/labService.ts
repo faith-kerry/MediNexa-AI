@@ -1,72 +1,53 @@
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
-const getToken = () => {
-  if (typeof window === "undefined") return null;
-
-  const token = localStorage.getItem("token");
-
-  console.log("Lab Token:", token);
-
-  return token;
-};
-
+// ==============================
 // Get all lab results
+// ==============================
+
 export const getLabResults = async () => {
-  const token = getToken();
-
-  console.log("Sending Authorization:", `Bearer ${token}`);
-
-  const response = await fetch(`${API_URL}/api/lab`, {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  const data = await response.json();
-
-  console.log("Server Response:", data);
+  const response = await fetch(`${API_URL}/api/lab`);
 
   if (!response.ok) {
-    throw new Error(data.message || "Failed to fetch lab results.");
-  }
-
-  return data;
-};
-
-// Upload lab result
-export const uploadLabResult = async (data: {
-  title: string;
-  fileUrl: string;
-}) => {
-  const token = getToken();
-
-  const response = await fetch(`${API_URL}/api/lab`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(data),
-  });
-
-  if (!response.ok) {
-    throw new Error("Failed to upload lab result.");
+    throw new Error("Failed to fetch lab results.");
   }
 
   return response.json();
 };
 
-// Delete lab result
-export const deleteLabResult = async (id: string) => {
-  const token = getToken();
+// ==============================
+// Upload Lab Result
+// ==============================
 
+export const uploadLabResult = async (
+  title: string,
+  file: File
+) => {
+  const formData = new FormData();
+
+  formData.append("title", title);
+  formData.append("file", file);
+
+  const response = await fetch(`${API_URL}/api/lab`, {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const data = await response.json();
+    throw new Error(data.message || "Upload failed.");
+  }
+
+  return response.json();
+};
+
+// ==============================
+// Delete Lab Result
+// ==============================
+
+export const deleteLabResult = async (id: string) => {
   const response = await fetch(`${API_URL}/api/lab/${id}`, {
     method: "DELETE",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
   });
 
   if (!response.ok) {

@@ -1,10 +1,19 @@
 const express = require("express");
+
 const router = express.Router();
 
 const {
-  analyzeLab,
+  uploadLabResult,
+  getLabResults,
+  deleteLabResult,
 } = require("../controllers/labController");
 
-router.post("/analyze", analyzeLab);
+// Temporary (NO AUTH)
+
+router.get("/", getLabResults);
+
+router.post("/", uploadLabResult);
+
+router.delete("/:id", deleteLabResult);
 
 module.exports = router;

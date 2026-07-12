@@ -2,11 +2,16 @@
 
 import { useEffect, useMemo, useState } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { bookAppointment } from "@/services/appointmentService";
+
+import {
+  bookAppointment,
+  getAppointments,
+  cancelAppointment,
+} from "@/services/appointmentService";
+
 import { getHospitals } from "@/services/hospitalService";
 
 import {
-  CalendarDays,
   Search,
   CheckCircle2,
   Hospital,
@@ -21,8 +26,20 @@ interface Hospital {
   phone?: string;
 }
 
+interface Appointment {
+  id: string;
+  appointmentDate: string;
+  reason: string;
+  status: string;
+  hospital: {
+    name: string;
+  };
+}
+
 export default function AppointmentPage() {
   const [hospitals, setHospitals] = useState<Hospital[]>([]);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+
   const [loading, setLoading] = useState(true);
 
   const [search, setSearch] = useState("");
@@ -30,8 +47,7 @@ export default function AppointmentPage() {
   const [selectedHospital, setSelectedHospital] =
     useState<Hospital | null>(null);
 
-  const [appointmentDate, setAppointmentDate] =
-    useState("");
+  const [appointmentDate, setAppointmentDate] = useState("");
 
   const [reason, setReason] = useState("");
 
@@ -39,29 +55,40 @@ export default function AppointmentPage() {
 
   useEffect(() => {
     fetchHospitals();
+    fetchAppointments();
   }, []);
 
   async function fetchHospitals() {
     try {
       const data = await getHospitals();
+
       setHospitals(data.hospitals || []);
     } catch (error) {
-      console.error("Failed to fetch hospitals:", error);
+      console.error(error);
     } finally {
       setLoading(false);
     }
   }
 
-  const filteredHospitals = useMemo(() => {
-    return hospitals.filter((hospital) => {
-      const query = search.toLowerCase();
+  async function fetchAppointments() {
+    try {
+      const data = await getAppointments();
 
-      return (
+      setAppointments(data.appointments || []);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  const filteredHospitals = useMemo(() => {
+    const query = search.toLowerCase();
+
+    return hospitals.filter(
+      (hospital) =>
         hospital.name.toLowerCase().includes(query) ||
         hospital.county.toLowerCase().includes(query) ||
         hospital.address.toLowerCase().includes(query)
-      );
-    });
+    );
   }, [hospitals, search]);
 
   const handleBookAppointment = async () => {
@@ -76,7 +103,7 @@ export default function AppointmentPage() {
     }
 
     if (!reason.trim()) {
-      alert("Please provide the reason for your visit.");
+      alert("Please enter the reason for your visit.");
       return;
     }
 
@@ -93,18 +120,21 @@ export default function AppointmentPage() {
       setReason("");
       setSelectedHospital(null);
 
+      fetchAppointments();
+
+      setTimeout(() => {
+        setSuccess(false);
+      }, 3000);
+
     } catch (error) {
       console.error(error);
       alert("Failed to book appointment.");
     }
-  };
-
-  return (
+  };  return (
     <DashboardLayout>
       <div className="space-y-8">
 
         {/* Header */}
-
         <div className="rounded-3xl border border-emerald-100 bg-white p-8 shadow-sm">
 
           <p className="mb-2 text-sm font-semibold uppercase tracking-widest text-emerald-600">
@@ -116,14 +146,13 @@ export default function AppointmentPage() {
           </h1>
 
           <p className="mt-3 max-w-3xl leading-7 text-slate-600">
-            Search for a hospital, select where you want to be treated,
-            choose your preferred appointment date, and submit your booking.
+            Search for a hospital, select your preferred facility,
+            choose a convenient appointment date, and submit your booking.
           </p>
 
         </div>
 
         {/* Search */}
-
         <div className="relative">
 
           <Search
@@ -140,23 +169,30 @@ export default function AppointmentPage() {
           />
 
         </div>
-                {/* Hospital List */}
 
+        {/* Hospital List */}
         {loading ? (
+
           <div className="rounded-3xl bg-white p-12 text-center shadow-sm">
             <p className="text-slate-500">
               Loading hospitals...
             </p>
           </div>
+
         ) : filteredHospitals.length === 0 ? (
+
           <div className="rounded-3xl bg-white p-12 text-center shadow-sm">
             <p className="text-slate-500">
               No hospitals found.
             </p>
           </div>
+
         ) : (
+
           <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+
             {filteredHospitals.map((hospital) => (
+
               <div
                 key={hospital.id}
                 onClick={() => setSelectedHospital(hospital)}
@@ -166,11 +202,14 @@ export default function AppointmentPage() {
                     : "border-slate-200 bg-white"
                 }`}
               >
+
                 <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-100">
+
                   <Hospital
                     size={32}
                     className="text-emerald-600"
                   />
+
                 </div>
 
                 <h2 className="mt-5 text-xl font-bold text-slate-900">
@@ -178,12 +217,14 @@ export default function AppointmentPage() {
                 </h2>
 
                 <div className="mt-4 flex items-center gap-2 text-slate-600">
+
                   <MapPin
                     size={18}
                     className="text-emerald-600"
                   />
 
                   <span>{hospital.county}</span>
+
                 </div>
 
                 <p className="mt-3 text-sm leading-6 text-slate-500">
@@ -191,9 +232,11 @@ export default function AppointmentPage() {
                 </p>
 
                 {hospital.phone && (
+
                   <p className="mt-4 text-sm font-medium text-slate-700">
                     📞 {hospital.phone}
                   </p>
+
                 )}
 
                 <button
@@ -207,9 +250,13 @@ export default function AppointmentPage() {
                     ? "Selected"
                     : "Select Hospital"}
                 </button>
+
               </div>
+
             ))}
+
           </div>
+
         )}
 
         {/* Appointment Form */}
@@ -246,14 +293,13 @@ export default function AppointmentPage() {
               <input
                 type="datetime-local"
                 value={appointmentDate}
-                onChange={(e) =>
-                  setAppointmentDate(e.target.value)
-                }
+                onChange={(e) => setAppointmentDate(e.target.value)}
                 className="w-full rounded-2xl border border-emerald-200 px-4 py-3 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
               />
 
             </div>
-                      </div>
+
+          </div>
 
           <div className="mt-6">
 
@@ -293,10 +339,8 @@ export default function AppointmentPage() {
                   Appointment Booked Successfully!
                 </h3>
 
-                <p className="mt-2 leading-7 text-slate-600">
-                  Your appointment has been submitted successfully.
-                  The hospital will review your request and confirm the
-                  appointment shortly.
+                <p className="mt-2 text-slate-600">
+                  Your appointment has been submitted successfully. The hospital will review your request and notify you once it has been confirmed.
                 </p>
 
               </div>
@@ -307,8 +351,83 @@ export default function AppointmentPage() {
 
         </div>
 
-      </div>
+        {/* My Appointments */}
 
+        <div className="rounded-3xl border border-emerald-100 bg-white p-8 shadow-sm">
+
+          <h2 className="mb-8 text-2xl font-bold text-slate-900">
+            My Appointments
+          </h2>
+
+          {appointments.length === 0 ? (
+
+            <p className="text-slate-500">
+              You haven't booked any appointments yet.
+            </p>
+
+          ) : (
+
+            <div className="space-y-5">
+
+              {appointments.map((appointment) => (
+
+                <div
+                  key={appointment.id}
+                  className="rounded-2xl border border-emerald-100 p-6"
+                >
+
+                  <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+
+                    <div>
+
+                      <h3 className="text-lg font-semibold text-slate-900">
+                        {appointment.hospital.name}
+                      </h3>
+
+                      <p className="mt-2 text-slate-600">
+                        {new Date(appointment.appointmentDate).toLocaleString()}
+                      </p>
+
+                      <p className="mt-2 text-slate-600">
+                        {appointment.reason}
+                      </p>
+
+                      <span className="mt-4 inline-block rounded-full bg-emerald-100 px-4 py-1 text-sm font-semibold text-emerald-700">
+                        {appointment.status}
+                      </span>
+
+                    </div>
+
+                    {appointment.status !== "CANCELLED" && (
+
+                      <button
+                        onClick={async () => {
+                          if (!confirm("Cancel this appointment?")) return;
+
+                          await cancelAppointment(appointment.id);
+
+                          fetchAppointments();
+                        }}
+                        className="rounded-xl bg-red-600 px-5 py-3 font-semibold text-white transition hover:bg-red-700"
+                      >
+                        Cancel
+                      </button>
+
+                    )}
+
+                  </div>
+
+                </div>
+
+              ))}
+
+            </div>
+
+          )}
+
+        </div>
+
+      </div>
     </DashboardLayout>
   );
 }

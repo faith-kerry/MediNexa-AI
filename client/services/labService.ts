@@ -56,3 +56,24 @@ export const deleteLabResult = async (id: string) => {
 
   return response.json();
 };
+
+
+
+// =====================================
+// Explain Lab Result
+// =====================================
+
+export const explainLabResult = async (id: string) => {
+  const response = await fetch(
+    `${API_URL}/api/ai/explain-lab/${id}`,
+    {
+      method: "POST",
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Unable to generate AI explanation.");
+  }
+
+  return response.json();
+};

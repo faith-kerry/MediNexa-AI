@@ -10,13 +10,14 @@ const aiRoutes = require("./routes/aiRoutes");
 const translatorRoutes = require("./routes/translatorRoutes");
 const appointmentRoutes = require("./routes/appointmentRoutes");
 const doctorRoutes = require("./routes/doctorRoutes");
+const patientRoutes = require("./routes/patientRoutes");
 const labRoutes = require("./routes/labRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
 const hospitalRoutes = require("./routes/hospitalRoutes");
-const app = express();
 const medicalRecordRoutes = require("./routes/medicalRecordRoutes");
 const prescriptionRoutes = require("./routes/prescriptionRoutes");
 
+const app = express();
 
 // =========================
 // Middleware
@@ -53,6 +54,8 @@ app.use("/api/translator", translatorRoutes);
 app.use("/api/appointments", appointmentRoutes);
 
 app.use("/api/doctor", doctorRoutes);
+
+app.use("/api/patient", patientRoutes);
 
 app.use("/api/lab", labRoutes);
 

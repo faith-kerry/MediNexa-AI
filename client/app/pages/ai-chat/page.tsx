@@ -2,15 +2,21 @@
 
 import { useEffect, useRef, useState } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
+
 import {
   Bot,
   Send,
   Mic,
-  Languages,
   User,
   Loader2,
+  Volume2,
+  Globe,
+  Languages,
+  ShieldCheck,
 } from "lucide-react";
+
 import { sendMessage } from "@/services/aiService";
+import { speak } from "@/services/voiceService";
 import useSpeechRecognition from "@/hooks/useSpeechRecognition";
 
 interface ChatMessage {
@@ -21,13 +27,23 @@ interface ChatMessage {
 
 export default function AIChatPage() {
   const [message, setMessage] = useState("");
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const { listening, startListening } = useSpeechRecognition();
+  const [speaking, setSpeaking] = useState(false);
+
+  const [voiceEnabled, setVoiceEnabled] = useState(true);
+
+  const [selectedLanguage, setSelectedLanguage] =
+    useState("English");
+
+  const [showLanguages, setShowLanguages] =
+    useState(false);
 
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const { listening, startListening } =
+    useSpeechRecognition();
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({
@@ -35,8 +51,11 @@ export default function AIChatPage() {
     });
   }, [messages]);
 
-  const handleSend = async (customMessage?: string) => {
-    const currentMessage = customMessage || message;
+  const handleSend = async (
+    customMessage?: string
+  ) => {
+    const currentMessage =
+      customMessage || message;
 
     if (!currentMessage.trim()) return;
 
@@ -54,7 +73,12 @@ export default function AIChatPage() {
     setLoading(true);
 
     try {
-      const response = await sendMessage(currentMessage);
+      const response = await sendMessage(
+        `${currentMessage}
+
+Respond ONLY in ${selectedLanguage}.
+Keep the response simple and patient-friendly.`
+      );
 
       const aiMessage: ChatMessage = {
         sender: "ai",
@@ -66,12 +90,22 @@ export default function AIChatPage() {
       };
 
       setMessages((prev) => [...prev, aiMessage]);
+
+      if (voiceEnabled) {
+        setSpeaking(true);
+
+        await speak(response.reply);
+
+        setSpeaking(false);
+      }
+
     } catch {
       setMessages((prev) => [
         ...prev,
         {
           sender: "ai",
-          text: "Sorry, something went wrong. Please try again.",
+          text:
+            "Sorry, I couldn't process your request. Please try again.",
           time: new Date().toLocaleTimeString([], {
             hour: "2-digit",
             minute: "2-digit",
@@ -85,229 +119,79 @@ export default function AIChatPage() {
   };
 
   const handleVoiceInput = () => {
-    startListening(async (text) => {
-      await handleSend(text);
+    startListening((text) => {
+      setMessage(text);
     });
   };
 
-  return (
-    <DashboardLayout>
-      <div className="space-y-6">
+  const playVoice = async (text: string) => {
+    try {
+      setSpeaking(true);
 
-        <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+      await speak(text);
 
-          <p className="mb-2 text-sm font-semibold uppercase tracking-widest text-blue-600">
-            Artificial Intelligence
-          </p>
+    } finally {
+      setSpeaking(false);
+    }
+  };
 
-          <h1 className="text-4xl font-bold tracking-tight text-slate-900">
-            AI Health Assistant
-          </h1>
+  const copyMessage = (text: string) => {
+    navigator.clipboard.writeText(text);
+  };
+ 
+return (
+  <DashboardLayout>
+    <div className="space-y-8">
 
-          <p className="mt-3 max-w-3xl leading-7 text-slate-600">
-            Chat with MediNexa AI to understand symptoms, medications,
-            laboratory reports and medical instructions in simple language.
-          </p>
+      {/* Hero */}
 
-        </div>
+      <div className="overflow-hidden rounded-3xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-green-500 p-8 text-white shadow-xl">
 
-        <div className="flex h-[720px] flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+        <div className="flex items-center justify-between">
 
-          <div className="flex items-center gap-4 border-b border-slate-200 bg-slate-50 px-6 py-5">
+          <div>
 
-            <div className="rounded-2xl bg-blue-600 p-3 text-white shadow-sm">
-              <Bot size={28} />
-            </div>
+            <div className="mb-4 flex items-center gap-3">
 
-            <div>
+              <div className="rounded-2xl bg-white/20 p-3 backdrop-blur">
 
-              <h2 className="text-lg font-bold text-slate-900">
-                MediNexa AI
-              </h2>
-
-              <p className="text-sm font-medium text-emerald-600">
-                ● Online
-              </p>
-
-            </div>
-
-          </div>
-
-          <div className="flex-1 overflow-y-auto p-6">
-
-            {messages.length === 0 && !loading && (
-              <div className="flex h-full items-center justify-center">
-
-                <div className="max-w-2xl rounded-3xl border border-blue-100 bg-blue-50 p-10 text-center shadow-sm">
-
-                  <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-blue-600 text-white">
-                    <Bot size={40} />
-                  </div>
-
-                  <h2 className="text-3xl font-bold text-slate-900">
-                    Welcome to MediNexa AI
-                  </h2>
-
-                  <p className="mt-4 leading-7 text-slate-600">
-                    Your intelligent healthcare assistant. Ask about symptoms,
-                    medications, lab results, medical instructions, or anything
-                    related to your health.
-                  </p>
-
-                  <p className="mt-6 text-sm text-slate-500">
-                    Try one of the suggested questions below or type your own.
-                  </p>
-
-                </div>
-
-              </div>
-            )}
-
-            {messages.map((msg, index) => (
-                            <div
-                key={index}
-                className={`flex ${
-                  msg.sender === "user"
-                    ? "justify-end"
-                    : "justify-start"
-                }`}
-              >
-                <div
-                  className={`max-w-[75%] rounded-3xl px-5 py-4 transition-all ${
-                    msg.sender === "user"
-                      ? "bg-blue-600 text-white shadow-sm"
-                      : "border border-slate-200 bg-white text-slate-800"
-                  }`}
-                >
-                  <div className="mb-3 flex items-center gap-2">
-
-                    {msg.sender === "ai" ? (
-                      <Bot size={18} />
-                    ) : (
-                      <User size={18} />
-                    )}
-
-                    <span className="text-xs font-medium opacity-60">
-                      {msg.time}
-                    </span>
-
-                  </div>
-
-                  <p className="whitespace-pre-wrap leading-7 text-[15px]">
-                    {msg.text}
-                  </p>
-
-                </div>
-              </div>
-            ))}
-
-            {loading && (
-
-              <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 w-fit">
-
-                <Loader2
-                  className="animate-spin text-blue-600"
-                  size={20}
-                />
-
-                <span className="text-slate-500">
-                  MediNexa AI is typing...
-                </span>
+                <Bot size={34} />
 
               </div>
 
-            )}
+              <div>
 
-            <div ref={bottomRef} />
+                <h1 className="text-4xl font-bold">
+                  MediNexa AI
+                </h1>
 
-          </div>
+                <p className="mt-1 text-emerald-100">
+                  Your Intelligent Healthcare Companion
+                </p>
 
-          <div className="px-6 pb-4">
-
-            <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">
-              Suggested Questions
-            </h3>
-
-            <div className="flex flex-wrap gap-3">
-
-              <button
-                onClick={() =>
-                  setMessage("I have had a headache for three days.")
-                }
-                className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium transition hover:border-blue-300 hover:bg-blue-50"
-              >
-                🤕 Headache
-              </button>
-
-              <button
-                onClick={() =>
-                  setMessage("Explain my lab results in simple language.")
-                }
-                className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium transition hover:border-blue-300 hover:bg-blue-50"
-              >
-                🧪 Lab Results
-              </button>
-
-              <button
-                onClick={() =>
-                  setMessage("Translate my doctor's instructions into Swahili.")
-                }
-                className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium transition hover:border-blue-300 hover:bg-blue-50"
-              >
-                🌍 Translate
-              </button>
-
-              <button
-                onClick={() =>
-                  setMessage("Remind me how to take my medication.")
-                }
-                className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium transition hover:border-blue-300 hover:bg-blue-50"
-              >
-                💊 Medication
-              </button>
+              </div>
 
             </div>
 
+            <p className="max-w-3xl leading-8 text-emerald-50">
+
+              Ask about symptoms, medications,
+              prescriptions, laboratory reports and receive
+              simple healthcare guidance in your preferred
+              language.
+
+            </p>
+
           </div>
 
-          <div className="border-t border-slate-200 bg-slate-50 p-5">
+          <div className="hidden lg:block">
 
-            <div className="flex gap-3">
+            <div className="rounded-3xl bg-white/15 p-6 backdrop-blur-lg">
 
-              <button className="rounded-2xl bg-white p-3 shadow-sm transition hover:bg-slate-100">
-                <Languages size={20} />
-              </button>
-
-              <button
-                onClick={handleVoiceInput}
-                className={`rounded-2xl p-3 shadow-sm transition ${
-                  listening
-                    ? "bg-red-600 text-white animate-pulse"
-                    : "bg-white hover:bg-slate-100"
-                }`}
-              >
-                <Mic size={20} />
-              </button>
-
-              <input
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    handleSend();
-                  }
-                }}
-                placeholder="Describe your symptoms or ask a health question..."
-                className="flex-1 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-slate-800 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+              <ShieldCheck
+                size={120}
+                className="text-white"
               />
-
-              <button
-                onClick={() => handleSend()}
-                disabled={loading}
-                className="flex items-center justify-center rounded-2xl bg-blue-600 px-6 text-white transition-all hover:scale-105 hover:bg-blue-700 disabled:opacity-50"
-              >
-                <Send size={20} />
-              </button>
 
             </div>
 
@@ -317,6 +201,335 @@ export default function AIChatPage() {
 
       </div>
 
-    </DashboardLayout>
-  );
+      {/* Status Cards */}
+
+      <div className="grid gap-5 md:grid-cols-4">
+
+        <div className="rounded-3xl border border-emerald-100 bg-white p-5 shadow-sm">
+
+          <p className="text-sm text-slate-500">
+            Status
+          </p>
+
+          <h3 className="mt-2 font-bold text-emerald-600">
+            🟢 Online
+          </h3>
+
+        </div>
+
+        <div className="rounded-3xl border border-emerald-100 bg-white p-5 shadow-sm">
+
+          <p className="text-sm text-slate-500">
+            Language
+          </p>
+
+          <button
+            onClick={() =>
+              setShowLanguages(!showLanguages)
+            }
+            className="mt-2 flex items-center gap-2 font-semibold text-emerald-600"
+          >
+            <Globe size={18} />
+
+            {selectedLanguage}
+
+          </button>
+
+          {showLanguages && (
+
+            <div className="mt-4 rounded-2xl border bg-white shadow-lg">
+
+              {[
+                "English",
+                "Kiswahili",
+                "Luo",
+                "Kikuyu",
+                "Kamba",
+                "Somali",
+              ].map((language) => (
+
+                <button
+                  key={language}
+                  onClick={() => {
+                    setSelectedLanguage(language);
+                    setShowLanguages(false);
+                  }}
+                  className="block w-full px-4 py-3 text-left transition hover:bg-emerald-50"
+                >
+                  {language}
+                </button>
+
+              ))}
+
+            </div>
+
+          )}
+
+        </div>
+
+        <div className="rounded-3xl border border-emerald-100 bg-white p-5 shadow-sm">
+
+          <p className="text-sm text-slate-500">
+            Voice Assistant
+          </p>
+
+          <button
+            onClick={() =>
+              setVoiceEnabled(!voiceEnabled)
+            }
+            className={`mt-2 rounded-full px-4 py-2 text-sm font-semibold ${
+              voiceEnabled
+                ? "bg-emerald-100 text-emerald-700"
+                : "bg-slate-100 text-slate-600"
+            }`}
+          >
+            {voiceEnabled
+              ? "Enabled"
+              : "Disabled"}
+          </button>
+
+        </div>
+
+        <div className="rounded-3xl border border-emerald-100 bg-white p-5 shadow-sm">
+
+          <p className="text-sm text-slate-500">
+            Services
+          </p>
+
+          <p className="mt-2 font-semibold text-slate-700">
+            Symptoms • Translation • Voice
+          </p>
+
+        </div>
+
+      </div>
+
+      {/* Chat Container */}
+
+      <div className="flex h-[730px] flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl">
+
+        {/* Chat Header */}
+
+        <div className="flex items-center justify-between border-b bg-white px-6 py-5">
+
+          <div className="flex items-center gap-4">
+
+            <div className="rounded-2xl bg-emerald-600 p-3 text-white">
+
+              <Bot size={28} />
+
+            </div>
+
+            <div>
+
+              <h2 className="font-bold text-slate-900">
+                MediNexa AI Assistant
+              </h2>
+
+              <p className="text-sm text-emerald-600">
+                Healthcare • Translation • Voice
+              </p>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <div className="flex-1 overflow-y-auto bg-slate-50 p-6">
+
+          {messages.length === 0 && !loading && (
+
+            <div className="flex h-full items-center justify-center">
+
+              <div className="max-w-2xl rounded-3xl bg-white p-10 text-center shadow">
+
+                <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-emerald-600 text-white">
+
+                  <Bot size={42} />
+
+                </div>
+
+                <h2 className="text-3xl font-bold">
+                  Welcome to MediNexa AI
+                </h2>
+
+                <p className="mt-4 leading-8 text-slate-600">
+
+                  Your trusted healthcare assistant.
+
+                  Ask about medications,
+                  symptoms,
+                  laboratory reports,
+                  prescriptions,
+                  or receive answers in your
+                  preferred language.
+
+                </p>
+
+              </div>
+
+            </div>
+
+          )}
+
+
+          {messages.map((msg, index) => (
+            <div
+              key={index}
+              className={`mb-5 flex ${
+                msg.sender === "user"
+                  ? "justify-end"
+                  : "justify-start"
+              }`}
+            >
+              <div
+                className={`max-w-[80%] rounded-3xl px-5 py-4 shadow-sm ${
+                  msg.sender === "user"
+                    ? "bg-emerald-600 text-white"
+                    : "border border-emerald-100 bg-white"
+                }`}
+              >
+                <div className="mb-3 flex items-center justify-between">
+
+                  <div className="flex items-center gap-2">
+
+                    {msg.sender === "ai" ? (
+                      <Bot
+                        size={18}
+                        className="text-emerald-600"
+                      />
+                    ) : (
+                      <User size={18} />
+                    )}
+
+                    <span className="text-xs opacity-70">
+                      {msg.time}
+                    </span>
+
+                  </div>
+
+                  {msg.sender === "ai" && (
+                    <div className="flex gap-2">
+
+                      <button
+                        onClick={() => navigator.clipboard.writeText(msg.text)}
+                        className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700 hover:bg-emerald-100"
+                      >
+                        Copy
+                      </button>
+
+                      <button
+                        onClick={() => playVoice(msg.text)}
+                        disabled={speaking || !voiceEnabled}
+                        className="flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700 hover:bg-emerald-100 disabled:opacity-50"
+                      >
+                        <Volume2 size={14} />
+
+                        {speaking
+                          ? "Speaking..."
+                          : "Listen"}
+
+                      </button>
+
+                    </div>
+                  )}
+
+                </div>
+
+                <p className="whitespace-pre-wrap leading-7">
+                  {msg.text}
+                </p>
+
+              </div>
+
+            </div>
+          ))}
+
+          {loading && (
+
+            <div className="flex justify-start">
+
+              <div className="flex items-center gap-3 rounded-3xl border border-emerald-100 bg-white px-5 py-4 shadow">
+
+                <Loader2
+                  className="animate-spin text-emerald-600"
+                  size={20}
+                />
+
+                <span className="text-slate-600">
+                  MediNexa AI is thinking...
+                </span>
+
+              </div>
+
+            </div>
+
+          )}
+
+          <div ref={bottomRef} />
+
+        </div>
+
+        {/* Bottom Input */}
+
+        <div className="border-t border-slate-200 bg-white p-5">
+
+          <div className="flex items-center gap-3">
+
+            <button
+              onClick={() =>
+                setMessage(
+                  `Reply in ${selectedLanguage}: `
+                )
+              }
+              className="rounded-2xl bg-emerald-100 p-3 text-emerald-700 hover:bg-emerald-200"
+            >
+              <Languages size={22} />
+            </button>
+
+            <button
+              onClick={handleVoiceInput}
+              className={`rounded-2xl p-3 ${
+                listening
+                  ? "animate-pulse bg-red-600 text-white"
+                  : "bg-emerald-100 text-emerald-700 hover:bg-emerald-200"
+              }`}
+            >
+              <Mic size={22} />
+            </button>
+
+            <input
+              value={message}
+              onChange={(e) =>
+                setMessage(e.target.value)
+              }
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleSend();
+                }
+              }}
+              placeholder={`Ask MediNexa AI... (${selectedLanguage})`}
+              className="flex-1 rounded-2xl border border-emerald-200 px-5 py-3 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+            />
+
+            <button
+              onClick={() => handleSend()}
+              disabled={loading}
+              className="rounded-2xl bg-emerald-600 px-6 py-3 text-white transition hover:bg-emerald-700 disabled:opacity-60"
+            >
+              <Send size={22} />
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </DashboardLayout>
+);
 }
+

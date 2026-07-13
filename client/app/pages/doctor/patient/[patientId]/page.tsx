@@ -18,11 +18,25 @@ interface LabResult {
   aiExplanation?: string;
 }
 
+interface Prescription {
+  id: string;
+  medicine: string;
+  dosage: string;
+  instructions: string;
+  createdAt: string;
+}
+
 interface Appointment {
   id: string;
   appointmentDate: string;
   reason: string;
   status: string;
+}
+
+interface DoctorNote {
+  id: string;
+  notes: string;
+  createdAt: string;
 }
 
 interface Patient {
@@ -33,6 +47,16 @@ interface Patient {
   appointments: Appointment[];
   records: MedicalRecord[];
   labResults: LabResult[];
+
+  prescriptions: {
+    id: string;
+    medicine: string;
+    dosage: string;
+    instructions: string;
+    createdAt: string;
+  }[];
+
+  doctorNotes: DoctorNote[];
 }
 
 export default function PatientDetailsPage() {
@@ -41,11 +65,18 @@ export default function PatientDetailsPage() {
   const patientId = params.patientId as string;
 
   const [patient, setPatient] =
-    useState<Patient | null>(null);
+  useState<Patient | null>(null);
 
-  const [loading, setLoading] =
-    useState(true);
+const [loading, setLoading] =
+  useState(true);
 
+const [summary, setSummary] =
+  useState("");
+
+const [loadingSummary, setLoadingSummary] =
+  useState(false);
+
+  
   const [medicine, setMedicine] = useState("");
 
 const [dosage, setDosage] = useState("");
@@ -55,6 +86,10 @@ const [instructions, setInstructions] =
 
 const [savingPrescription, setSavingPrescription] =
   useState(false);
+
+  const [doctorNotes, setDoctorNotes] = useState("");
+
+const [savingNotes, setSavingNotes] = useState(false);
 
   useEffect(() => {
     fetchPatient();
@@ -79,9 +114,73 @@ const [savingPrescription, setSavingPrescription] =
     }
   }
 
-  async function savePrescription() {
+  async function generateSummary() {
+  try {
+    setLoadingSummary(true);
+
+    const response = await fetch(
+      `http://localhost:5000/api/doctor/patient/${patientId}/summary`
+    );
+
+    const data = await response.json();
+
+    if (!data.success) {
+      throw new Error(data.message);
+    }
+
+    setSummary(data.summary);
+
+  } catch (error) {
+    console.error(error);
+    alert("Failed to generate AI summary.");
+  } finally {
+    setLoadingSummary(false);
+  }
+}
+
+  async function saveDoctorNotes() {
+  if (!doctorNotes.trim()) {
+    alert("Please enter doctor notes.");
+    return;
+  }
+
+  try {
+    setSavingNotes(true);
+
+    const response = await fetch(
+      `http://localhost:5000/api/doctor/patient/${patientId}/notes`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          notes: doctorNotes,
+        }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!data.success) {
+      throw new Error(data.message);
+    }
+
+    alert("Doctor notes saved successfully!");
+
+    fetchPatient();
+
+  } catch (error) {
+    console.error(error);
+    alert("Failed to save doctor notes.");
+  } finally {
+    setSavingNotes(false);
+  }
+}
+  
+    async function savePrescription() {
   if (!medicine || !dosage || !instructions) {
-    alert("Please complete all prescription fields.");
+    alert("Please complete all fields.");
     return;
   }
 
@@ -89,20 +188,21 @@ const [savingPrescription, setSavingPrescription] =
     setSavingPrescription(true);
 
     const response = await fetch(
-      "http://localhost:5000/api/prescriptions",
+      `http://localhost:5000/api/doctor/patient/${patientId}/prescription`,
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          userId: patient?.id,
           medicine,
           dosage,
           instructions,
         }),
       }
     );
+
+    
 
     const data = await response.json();
 
@@ -116,6 +216,9 @@ const [savingPrescription, setSavingPrescription] =
     setDosage("");
     setInstructions("");
 
+    // Refresh patient data so the new prescription appears
+    fetchPatient();
+
   } catch (error) {
     console.error(error);
     alert("Failed to save prescription.");
@@ -123,7 +226,6 @@ const [savingPrescription, setSavingPrescription] =
     setSavingPrescription(false);
   }
 }
-
   if (loading) {
     return (
       <DashboardLayout>
@@ -303,7 +405,72 @@ const [savingPrescription, setSavingPrescription] =
         className="w-full rounded-xl border border-slate-300 p-3"
       />
 
-    </div>
+    </div>{/* Doctor Notes */}
+
+<div className="rounded-3xl border border-emerald-100 bg-white p-8 shadow-sm">
+
+  <h2 className="mb-6 text-2xl font-bold">
+    Doctor Notes
+  </h2>
+
+  <textarea
+    rows={7}
+    value={doctorNotes}
+    onChange={(e) => setDoctorNotes(e.target.value)}
+    placeholder="Write consultation notes..."
+    className="w-full rounded-2xl border border-slate-300 p-4 outline-none focus:border-emerald-500"
+  />
+
+  <button
+    onClick={saveDoctorNotes}
+    disabled={savingNotes}
+    className="mt-5 rounded-xl bg-emerald-600 px-6 py-3 font-semibold text-white hover:bg-emerald-700 disabled:opacity-50"
+  >
+    {savingNotes ? "Saving..." : "Save Notes"}
+  </button>
+
+  <div className="mt-8">
+
+    <h3 className="mb-4 text-xl font-semibold">
+      Previous Notes
+    </h3>
+
+    {patient.doctorNotes.length === 0 ? (
+
+      <p className="text-slate-500">
+        No doctor notes yet.
+      </p>
+
+    ) : (
+
+      <div className="space-y-4">
+
+        {patient.doctorNotes.map((note) => (
+
+          <div
+            key={note.id}
+            className="rounded-xl border border-slate-200 bg-slate-50 p-4"
+          >
+
+            <p className="whitespace-pre-wrap text-slate-700">
+              {note.notes}
+            </p>
+
+            <p className="mt-3 text-sm text-slate-500">
+              {new Date(note.createdAt).toLocaleString()}
+            </p>
+
+          </div>
+
+        ))}
+
+      </div>
+
+    )}
+
+  </div>
+
+</div>
 
     <div>
 
@@ -346,6 +513,46 @@ const [savingPrescription, setSavingPrescription] =
     </button>
 
   </div>
+
+  {/* AI Patient Summary */}
+
+<div className="rounded-3xl border border-emerald-100 bg-white p-8 shadow-sm">
+
+  <div className="flex items-center justify-between">
+
+    <h2 className="text-2xl font-bold">
+      🤖 AI Patient Summary
+    </h2>
+
+    <button
+      onClick={generateSummary}
+      disabled={loadingSummary}
+      className="rounded-xl bg-emerald-600 px-5 py-3 font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50"
+    >
+      {loadingSummary ? "Generating..." : "Generate Summary"}
+    </button>
+
+  </div>
+
+  {summary ? (
+
+    <div className="mt-6 rounded-2xl bg-emerald-50 p-6">
+
+      <pre className="whitespace-pre-wrap font-sans text-slate-700">
+        {summary}
+      </pre>
+
+    </div>
+
+  ) : (
+
+    <p className="mt-6 text-slate-500">
+      Click <strong>Generate Summary</strong> to create an AI overview of this patient's case.
+    </p>
+
+  )}
+
+</div>
 
 </div>
 

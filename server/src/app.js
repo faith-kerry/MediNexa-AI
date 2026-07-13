@@ -16,6 +16,7 @@ const dashboardRoutes = require("./routes/dashboardRoutes");
 const hospitalRoutes = require("./routes/hospitalRoutes");
 const medicalRecordRoutes = require("./routes/medicalRecordRoutes");
 const prescriptionRoutes = require("./routes/prescriptionRoutes");
+const voiceRoutes = require("./routes/voiceRoutes");
 
 const app = express();
 
@@ -64,6 +65,8 @@ app.use("/api/hospitals", hospitalRoutes);
 app.use("/api/medical-records", medicalRecordRoutes);
 
 app.use("/api/prescriptions", prescriptionRoutes);
+
+app.use("/api/voice", voiceRoutes);
 
 // =========================
 // Home Route

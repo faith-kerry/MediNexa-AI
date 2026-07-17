@@ -135,3 +135,85 @@ Rules:
     });
   }
 };
+
+// =====================================
+// Explain Medication
+// =====================================
+
+exports.explainMedication = async (req, res) => {
+  try {
+    const { medicine, dosage, duration } = req.body;
+
+    if (!medicine) {
+      return res.status(400).json({
+        success: false,
+        message: "Medicine name is required.",
+      });
+    }
+
+    const completion = await groq.chat.completions.create({
+      model: "llama-3.3-70b-versatile",
+
+      messages: [
+        {
+          role: "system",
+          content: `
+You are MediNexa AI.
+
+You help patients understand prescribed medications.
+
+Rules:
+- Never diagnose diseases.
+- Never tell patients to stop taking prescribed medication.
+- Explain everything in very simple language.
+- Keep the response friendly and easy to read.
+- Use headings.
+- Use bullet points.
+- Mention common side effects only.
+- Explain the best time to take the medicine if generally known.
+- Mention whether food may be important if generally applicable.
+- Remind patients to follow their doctor's instructions.
+- End with a short disclaimer that AI is not a substitute for professional medical advice.
+`,
+        },
+
+        {
+          role: "user",
+          content: `
+Medicine:
+${medicine}
+
+Dosage:
+${dosage || "Not provided"}
+
+Duration:
+${duration || "Not provided"}
+
+Please explain:
+
+1. What this medicine is used for.
+2. How it is generally taken.
+3. Common side effects.
+4. Best time to take it.
+5. Whether it should be taken with food if applicable.
+6. Important precautions.
+7. A short patient-friendly summary.
+`,
+        },
+      ],
+    });
+
+    return res.json({
+      success: true,
+      explanation: completion.choices[0].message.content,
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to explain medication.",
+    });
+  }
+};

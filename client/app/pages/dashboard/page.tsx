@@ -23,12 +23,10 @@ export default function Dashboard() {
         {/* Welcome Section */}
 
         <div className="rounded-3xl border border-slate-200 bg-gradient-to-r from-white to-slate-50 p-8 shadow-sm">
-          <p className="mb-2 text-sm font-semibold uppercase tracking-widest text-blue-600">
-            Dashboard
-          </p>
+          
 
           <h1 className="text-4xl font-bold tracking-tight text-slate-900">
-            Welcome to <span className="text-blue-600">MediNexa AI</span>
+            Welcome to <span className="text-emerald-600">MediNexa AI</span>
           </h1>
 
           {/* Continue As */}

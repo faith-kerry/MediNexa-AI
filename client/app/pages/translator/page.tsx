@@ -3,12 +3,17 @@
 import { useState } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { translateText } from "@/services/translatorService";
+
 import {
   Languages,
   Copy,
   Volume2,
   Loader2,
   CheckCircle2,
+  Sparkles,
+  ShieldCheck,
+  Trash2,
+  ArrowRightLeft,
 } from "lucide-react";
 
 export default function TranslatorPage() {
@@ -74,176 +79,374 @@ export default function TranslatorPage() {
     window.speechSynthesis.speak(speech);
   };
 
+  const handleClear = () => {
+    setInputText("");
+    setTranslatedText("");
+  };
+
   return (
     <DashboardLayout>
 
       <div className="space-y-8">
 
-        <div>
+        {/* HERO */}
 
-          <h1 className="text-4xl font-bold text-slate-800 dark:text-white">
-            Medical Translator
-          </h1>
+        <div className="relative overflow-hidden rounded-[32px] bg-gradient-to-r from-teal-700 via-teal-600 to-emerald-500 p-8 md:p-10 shadow-xl">
 
-          <p className="text-slate-500 mt-2">
-            Translate doctor's instructions into simple local
-            languages for easier understanding.
-          </p>
+          <div className="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-white/10 blur-3xl" />
 
-        </div>
+          <div className="absolute -bottom-24 left-1/3 h-56 w-56 rounded-full bg-emerald-300/20 blur-3xl" />
 
-        <div className="grid lg:grid-cols-2 gap-8">
+          <div className="relative flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
 
-          {/* LEFT PANEL */}
+            <div>
 
-          <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-lg p-8">
+              <div className="inline-flex items-center gap-2 rounded-full bg-white/20 backdrop-blur-md px-4 py-2 text-sm font-medium text-white">
 
-            <div className="flex items-center gap-3 mb-6">
+                <Sparkles size={16} />
 
-              <Languages
-                size={30}
-                className="text-blue-600"
-              />
-
-              <h2 className="text-2xl font-semibold">
-                Doctor's Instructions
-              </h2>
-
-            </div>
-
-            <label className="font-medium">
-              Select Language
-            </label>
-
-            <select
-              value={language}
-              onChange={(e) =>
-                setLanguage(e.target.value)
-              }
-              className="w-full mt-2 mb-6 border rounded-xl p-3"
-            >
-              {languages.map((lang) => (
-                <option key={lang}>
-                  {lang}
-                </option>
-              ))}
-            </select>
-
-            <label className="font-medium">
-              Medical Instructions
-            </label>
-
-            <textarea
-  rows={10}
-  value={inputText}
-  onChange={(e) => setInputText(e.target.value)}
-  placeholder="Paste the doctor's instructions here..."
-  className="w-full mt-2 border border-slate-300 rounded-2xl p-4 resize-none outline-none focus:ring-2 focus:ring-blue-600 bg-white dark:bg-slate-800 dark:text-white relative z-10"
-/>
-                       <button
-              onClick={handleTranslate}
-              disabled={loading}
-              className="mt-6 w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white rounded-2xl py-4 font-semibold flex items-center justify-center gap-3 transition"
-            >
-              {loading ? (
-                <>
-                  <Loader2
-                    size={22}
-                    className="animate-spin"
-                  />
-                  Translating...
-                </>
-              ) : (
-                <>
-                  <Languages size={22} />
-                  Translate Instructions
-                </>
-              )}
-            </button>
-
-          </div>
-
-          {/* RIGHT PANEL */}
-
-          <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-lg p-8">
-
-            <div className="flex items-center justify-between mb-6">
-
-              <h2 className="text-2xl font-semibold">
-                Translation
-              </h2>
-
-              <div className="flex gap-3">
-
-                <button
-                  onClick={handleCopy}
-                  className="bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-xl p-3 transition"
-                >
-                  {copied ? (
-                    <CheckCircle2
-                      size={20}
-                      className="text-green-600"
-                    />
-                  ) : (
-                    <Copy size={20} />
-                  )}
-                </button>
-
-                <button
-                  onClick={handleSpeak}
-                  className="bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-xl p-3 transition"
-                >
-                  <Volume2 size={20} />
-                </button>
+                AI Powered Translation
 
               </div>
 
-            </div>
+              <h1 className="mt-5 text-4xl md:text-5xl font-bold text-white">
 
-            <div className="min-h-[420px] rounded-2xl border bg-slate-50 dark:bg-slate-800 p-6 whitespace-pre-wrap leading-8 text-lg">
+                Medical Translator
 
-              {translatedText ? (
-                translatedText
-              ) : (
-                <div className="h-full flex flex-col items-center justify-center text-slate-400">
+              </h1>
 
-                  <Languages
-                    size={70}
-                    className="mb-5"
-                  />
+              <p className="mt-4 max-w-2xl leading-8 text-teal-50">
 
-                  <p className="text-center">
-                    Your translated medical instructions
-                    will appear here.
-                  </p>
+                Translate prescriptions, diagnoses and doctor's
+                instructions into local languages so patients
+                clearly understand their treatment and medication.
 
-                </div>
-              )}
+              </p>
 
             </div>
 
-            {translatedText && (
+            <div className="hidden lg:flex h-28 w-28 rounded-3xl bg-white/15 backdrop-blur-lg items-center justify-center">
 
-              <div className="mt-6 rounded-2xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 p-5">
+              <Languages
+                size={50}
+                className="text-white"
+              />
 
-                <h3 className="font-semibold text-green-700 dark:text-green-400 mb-2">
-                  MediNexa AI Note
-                </h3>
+            </div>
 
-                <p className="text-sm leading-7 text-slate-700 dark:text-slate-300">
-                  This translation is intended to help patients
-                  better understand medical instructions. It
-                  does not replace professional medical advice.
+          </div>
+
+        </div>
+
+        {/* MAIN GRID */}
+
+        <div className="grid lg:grid-cols-2 gap-8">          {/* LEFT PANEL */}
+
+          <div className="rounded-[32px] border border-slate-200 bg-white p-8 shadow-lg">
+
+            <div className="flex items-center justify-between mb-8">
+
+              <div>
+
+                <h2 className="text-2xl font-bold text-slate-800">
+                  Doctor's Instructions
+                </h2>
+
+                <p className="text-slate-500 mt-2 text-sm">
+                  Enter the medical instructions and choose the patient's language.
                 </p>
 
               </div>
 
-            )}
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-teal-100">
+
+                <Languages
+                  size={28}
+                  className="text-teal-700"
+                />
+
+              </div>
+
+            </div>
+
+            {/* Language Selection */}
+
+            <div className="grid grid-cols-[1fr_auto_1fr] gap-4 items-end">
+
+              <div>
+
+                <label className="mb-2 block text-sm font-semibold text-slate-700">
+                  From
+                </label>
+
+                <select
+                  disabled
+                  className="w-full rounded-2xl border border-slate-300 bg-slate-100 px-4 py-3 text-slate-600 outline-none"
+                >
+                  <option>English</option>
+                </select>
+
+              </div>
+
+              <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-teal-50">
+
+                <ArrowRightLeft
+                  size={20}
+                  className="text-teal-700"
+                />
+
+              </div>
+
+              <div>
+
+                <label className="mb-2 block text-sm font-semibold text-slate-700">
+                  To
+                </label>
+
+                <select
+                  value={language}
+                  onChange={(e) =>
+                    setLanguage(e.target.value)
+                  }
+                  className="w-full rounded-2xl border border-slate-300 px-4 py-3 outline-none transition focus:border-teal-600 focus:ring-4 focus:ring-teal-100"
+                >
+                  {languages.map((lang) => (
+                    <option
+                      key={lang}
+                      value={lang}
+                    >
+                      {lang}
+                    </option>
+                  ))}
+                </select>
+
+              </div>
+
+            </div>
+
+            {/* Text Area */}
+
+            <div className="mt-8">
+
+              <div className="mb-3 flex items-center justify-between">
+
+                <label className="font-semibold text-slate-700">
+                  Medical Instructions
+                </label>
+
+                <span className="text-xs text-slate-400">
+                  {inputText.length} characters
+                </span>
+
+              </div>
+
+              <textarea
+                rows={11}
+                value={inputText}
+                onChange={(e) =>
+                  setInputText(e.target.value)
+                }
+                placeholder="Example:
+
+Take one tablet twice daily after meals for five days. Drink plenty of water and return to the hospital if symptoms persist."
+                className="w-full resize-none rounded-3xl border border-slate-300 bg-slate-50 p-5 leading-8 outline-none transition duration-300 focus:border-teal-600 focus:bg-white focus:ring-4 focus:ring-teal-100"
+              />
+
+            </div>
+
+            {/* Translate Button */}
+
+            <button
+              onClick={handleTranslate}
+              disabled={loading}
+              className="mt-8 flex w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-teal-700 to-emerald-500 py-4 text-lg font-semibold text-white shadow-lg transition-all duration-300 hover:scale-[1.02] hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-60"
+            >
+
+              {loading ? (
+                <>
+
+                  <Loader2
+                    size={24}
+                    className="animate-spin"
+                  />
+
+                  Translating...
+
+                </>
+              ) : (
+                <>
+
+                  <Languages size={24} />
+
+                  Translate Instructions
+
+                </>
+              )}
+
+            </button>
+
+            {/* Tips */}
+
+            <div className="mt-8 rounded-3xl border border-teal-100 bg-teal-50 p-6">
+
+              <h3 className="mb-3 font-semibold text-teal-800">
+                Translation Tips
+              </h3>
+
+              <ul className="space-y-2 text-sm leading-7 text-slate-600">
+
+                <li>
+                  • Use complete doctor's instructions for more accurate translations.
+                </li>
+
+                <li>
+                  • Avoid abbreviations where possible.
+                </li>
+
+                <li>
+                  • Always confirm important medical advice with a healthcare professional.
+                </li>
+
+              </ul>
+
+            </div>
+
+          </div>          {/* RIGHT PANEL */}
+
+          <div className="rounded-[32px] border border-slate-200 bg-white p-8 shadow-lg">
+
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-8">
+
+              <div>
+
+                <h2 className="text-2xl font-bold text-slate-800">
+                  AI Translation
+                </h2>
+
+                <p className="mt-2 text-sm text-slate-500">
+                  Translated into <span className="font-semibold text-teal-700">{language}</span>
+                </p>
+
+              </div>
+
+              <div className="flex flex-wrap gap-3">
+
+                <button
+                  onClick={handleCopy}
+                  disabled={!translatedText}
+                  className="flex items-center gap-2 rounded-2xl border border-slate-200 px-4 py-3 font-medium transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {copied ? (
+                    <CheckCircle2
+                      size={18}
+                      className="text-green-600"
+                    />
+                  ) : (
+                    <Copy size={18} />
+                  )}
+
+                  {copied ? "Copied" : "Copy"}
+                </button>
+
+                <button
+                  onClick={handleSpeak}
+                  disabled={!translatedText}
+                  className="flex items-center gap-2 rounded-2xl border border-slate-200 px-4 py-3 font-medium transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <Volume2 size={18} />
+                  Listen
+                </button>
+
+                <button
+                  onClick={handleClear}
+                  className="flex items-center gap-2 rounded-2xl bg-red-50 px-4 py-3 font-medium text-red-600 transition hover:bg-red-100"
+                >
+                  <Trash2 size={18} />
+                  Clear
+                </button>
+
+              </div>
+
+            </div>
+
+            <div className="flex min-h-[430px] flex-col rounded-3xl border border-slate-200 bg-slate-50 p-6">
+
+              {translatedText ? (
+
+                <div className="whitespace-pre-wrap text-lg leading-9 text-slate-700">
+                  {translatedText}
+                </div>
+
+              ) : (
+
+                <div className="flex flex-1 flex-col items-center justify-center text-center">
+
+                  <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-teal-100">
+
+                    <Languages
+                      size={48}
+                      className="text-teal-700"
+                    />
+
+                  </div>
+
+                  <h3 className="text-xl font-semibold text-slate-700">
+                    Waiting for Translation
+                  </h3>
+
+                  <p className="mt-3 max-w-sm leading-7 text-slate-500">
+                    Paste the doctor's instructions, choose a language,
+                    and click <span className="font-semibold">Translate Instructions</span>.
+                    Your translated medical instructions will appear here.
+                  </p>
+
+                </div>
+
+              )}
+
+            </div>
+
+            <div className="mt-8 rounded-3xl border border-emerald-200 bg-emerald-50 p-6">
+
+              <div className="flex items-start gap-4">
+
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-100">
+
+                  <ShieldCheck
+                    size={24}
+                    className="text-emerald-700"
+                  />
+
+                </div>
+
+                <div>
+
+                  <h3 className="font-semibold text-emerald-800">
+                    MediNexa AI Medical Notice
+                  </h3>
+
+                  <p className="mt-2 text-sm leading-7 text-slate-600">
+                    This translation is generated to help patients better
+                    understand medical instructions. It should not replace
+                    professional medical advice, diagnosis, or treatment.
+                    Patients should always consult a qualified healthcare
+                    provider whenever clarification is needed.
+                  </p>
+
+                </div>
+
+              </div>
+
+            </div>
 
           </div>
 
-        </div>      </div>
+        </div>
+
+      </div>
 
     </DashboardLayout>
+
   );
+
 }
